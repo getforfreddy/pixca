@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "557895252483",
+    "project_id": "pixca-d82c7",
+    "storage_bucket": "pixca-d82c7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:557895252483:android:6d6a22154fa5af9bd0ac36",
+        "android_client_info": {
+          "package_name": "com.pixca.pixca"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "557895252483-drbj52jrf30mthf6o0umj23jd1oivl6f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHziXOUzIx77OWnXinmWSEEdx6Ilybmus"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "557895252483-drbj52jrf30mthf6o0umj23jd1oivl6f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "557895252483-g8j5itiiltpcijlkml3bj19ujbmfjes0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.pixca.pixca"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
