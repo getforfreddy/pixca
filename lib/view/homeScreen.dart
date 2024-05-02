@@ -3,6 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:pixca/controller/carousel-Controler.dart';
 import 'package:pixca/view/phoneScreen.dart';
 import 'package:pixca/view/settingsScreen.dart';
 import 'package:pixca/view/watchesScreenSample.dart';
@@ -20,6 +23,8 @@ class HomeSample extends StatefulWidget {
 }
 
 class _HomeSampleState extends State<HomeSample> {
+  ImageController caroselController = Get.put(ImageController());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -162,10 +167,36 @@ class _HomeSampleState extends State<HomeSample> {
                   child: Text("Accessories")),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 30),
-            child: CarouselDemo(),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(top: 30),
+          //   child: CarouselDemo(),
+          // ),
+
+          Obx(() {
+            if (caroselController.carouselImages.isEmpty) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            } else {
+              return CarouselSlider.builder(
+                itemCount: caroselController.carouselImages.length,
+                itemBuilder: (context, index, realIndex) {
+                  return InkWell(
+                    onTap: () {
+                      print("Hello");
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Image.network(
+                          caroselController.carouselImages[index]),
+                    ),
+                  );
+                },
+                options: CarouselOptions(height: 500.0, autoPlay: true),
+              );
+            }
+          }),
+
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
@@ -173,25 +204,35 @@ class _HomeSampleState extends State<HomeSample> {
               style: TextStyle(fontSize: 30),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: Container(
-              height: 150.h,
-              color: Colors.white,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 6,
-                itemBuilder: (context, index) {
-                  return Container(
-                    width: 200,
-                    margin: EdgeInsets.all(2),
-                    color: Colors.green[50],
-                    child: Text("image$index"),
-                  );
-                },
-              ),
-            ),
+          Obx(
+            () {
+              if (caroselController.brandImages.isEmpty) {
+                return CircularProgressIndicator();
+              } else {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Container(
+                    height: 150.h,
+                    color: Colors.white,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: caroselController.brandImages.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          width: 200,
+                          margin: EdgeInsets.all(2),
+                          color: Colors.green[50],
+                          child: Image.network(
+                              caroselController.brandImages[index]),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              }
+            },
           ),
+
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
@@ -274,26 +315,26 @@ class _HomeSampleState extends State<HomeSample> {
   }
 }
 
-class CarouselDemo extends StatelessWidget {
-  final List<String> imageList = [
-    'assect/images/carousielSlider/iPhoneList.jpeg',
-    'assect/images/carousielSlider/Pixel-7a-5g.jpeg',
-    'assect/images/carousielSlider/pixel-7a-onHand.jpg',
-    'assect/images/carousielSlider/vivoT2X5G_1.jpg'
-
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return CarouselSlider(
-      options: CarouselOptions(height: 500.0, autoPlay: true,),
-      items: imageList.map((item) {
-        return Image.asset(
-          item,
-          fit: BoxFit.cover,
-          width: 1000,
-        );
-      }).toList(),
-    );
-  }
-}
+// class CarouselDemo extends StatelessWidget {
+//   final List<String> imageList = [
+//     'assect/images/carousielSlider/iPhoneList.jpeg',
+//     'assect/images/carousielSlider/Pixel-7a-5g.jpeg',
+//     'assect/images/carousielSlider/pixel-7a-onHand.jpg',
+//     'assect/images/carousielSlider/vivoT2X5G_1.jpg'
+//
+//   ];
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return CarouselSlider(
+//       options: CarouselOptions(height: 500.0, autoPlay: true,),
+//       items: imageList.map((item) {
+//         return Image.asset(
+//           item,
+//           fit: BoxFit.cover,
+//           width: 1000,
+//         );
+//       }).toList(),
+//     );
+//   }
+// }

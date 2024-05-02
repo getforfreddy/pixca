@@ -24,7 +24,7 @@ class _SplashScreenSampleState extends State<SplashScreenSample> {
     // TODO: implement initState
     super.initState();
     Timer.periodic(Duration(seconds: 3), (timer) {
-      Navigator.push(context, MaterialPageRoute(
+      Navigator.pushReplacement(context, MaterialPageRoute(
         builder: (context) => LoginSample(),
       ),);
     });
