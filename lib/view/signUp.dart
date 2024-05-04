@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pixca/view/emailValidationScreen.dart';
 
+import '../controller/emailController.dart';
+import '../controller/googleSignInController.dart';
 import 'homeScreen.dart';
 import 'login.dart';
 
@@ -22,6 +26,11 @@ class _SignUpPageState extends State<SignUpPage> {
 
   var nameController = TextEditingController();
   var emailController = TextEditingController();
+
+  final GoogleController _googleSignInController =
+  Get.put(GoogleController());
+  final EmailPassController _emailPassController =
+  Get.put(EmailPassController());
 
   var userNamergx = RegExp(
       r"(^[A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})");
@@ -181,31 +190,36 @@ class _SignUpPageState extends State<SignUpPage> {
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => LoginSample(),
-                            ));
-                      },
-                      child: Text("SignUp")),
-                ),
-                SizedBox(
-                  width: 170,
-                  height: 50,
-                  child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (registrationkey.currentState!.validate()) {
-                          // ScaffoldMessenger.of(context)
-                          //     .showSnackBar(SnackBar(content: Text("Success")));
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => HomeSample(),
-                              ));
+                          _emailPassController.updateLoading();
+                          try {
+                            await _emailPassController.signupUser(
+                              emailController.text,
+                              passwordController.text,
+                              nameController.text,
+                            );
+                            if (_emailPassController.currentUser !=
+                                null) {
+                              Get.off(
+                                      () => EmailValidationScreen(
+                                      user: _emailPassController
+                                          .currentUser!),
+                                  transition:
+                                  Transition.leftToRightWithFade);
+                            } else {
+                              // No user is currently authenticated
+                              Get.snackbar('No user is',
+                                  'currently authenticated');
+                            }
+                          } catch (e) {
+                            Get.snackbar('Error', e.toString());
+                          } finally {
+                            _emailPassController.updateLoading();
+                          }
                         }
                       },
-                      child: Text("Register")),
+                      child: Text("SignUp")),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(30.0),

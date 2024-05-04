@@ -95,7 +95,7 @@ class _HomeSampleState extends State<HomeSample> {
                       MaterialPageRoute(
                         builder: (context) => LoginSample(),
                       ),
-                          (route) => false);
+                      (route) => false);
                 },
                 leading: Icon(
                   Icons.logout,
@@ -169,40 +169,16 @@ class _HomeSampleState extends State<HomeSample> {
                   child: Text("Accessories")),
             ],
           ),
-
-          // Obx(() {
-          //   if (caroselController.carouselImages.isEmpty) {
-          //     return Shimmer.fromColors(
-          //       child: Text("Loading"),
-          //       baseColor: Colors.grey,
-          //       highlightColor: CupertinoColors.activeBlue,
-          //     );
-          //   } else {
-          //     return CarouselSlider.builder(
-          //       itemCount: caroselController.carouselImages.length,
-          //       itemBuilder: (context, index, realIndex) {
-          //         return InkWell(
-          //           onTap: () {
-          //             print("Hello");
-          //           },
-          //           child: Padding(
-          //             padding: EdgeInsets.all(10),
-          //             child: Image.network(caroselController.carouselImages[index]),
-          //           ),
-          //         );
-          //       },
-          //       options: CarouselOptions(height: 500.0, autoPlay: true),
-          //     );
-          //   }
-          // }),
           Obx(() {
             if (caroselController.carouselImages.isEmpty) {
-              return Center(heightFactor: 500.h,
+              return Center(
+                heightFactor: 500.h,
                 widthFactor: 500.w,
                 child: SizedBox(
                     width: 100,
                     height: 100,
-                    child: Lottie.asset('assect/animations/loadingLottie.json')),
+                    child:
+                        Lottie.asset('assect/animations/loadingLottie.json')),
               );
             } else {
               return CarouselSlider.builder(
@@ -248,7 +224,8 @@ class _HomeSampleState extends State<HomeSample> {
                           width: 200,
                           margin: EdgeInsets.all(2),
                           color: Colors.white60,
-                          child: Image.network(caroselController.brandImages[index]),
+                          child: Image.network(
+                              caroselController.brandImages[index]),
                         ),
                       );
                     },
@@ -257,8 +234,6 @@ class _HomeSampleState extends State<HomeSample> {
               );
             }
           }),
-
-
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
@@ -266,11 +241,11 @@ class _HomeSampleState extends State<HomeSample> {
               style: TextStyle(fontSize: 30),
             ),
           ),
-
           Obx(
-                () {
+            () {
               if (caroselController.newLaunchedGrid.isEmpty) {
-                return Shimmer.fromColors(child: Text("Loading"),
+                return Shimmer.fromColors(
+                    child: Text("Loading"),
                     baseColor: Colors.grey,
                     highlightColor: CupertinoColors.activeBlue);
               } else {
@@ -301,8 +276,6 @@ class _HomeSampleState extends State<HomeSample> {
               }
             },
           ),
-
-
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
@@ -344,11 +317,11 @@ class _HomeSampleState extends State<HomeSample> {
               color: Colors.grey[300],
               child: Center(
                   child: Text(
-                    "End",
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  )),
+                "End",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              )),
             ),
           )
         ],
