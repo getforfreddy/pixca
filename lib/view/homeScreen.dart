@@ -5,11 +5,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:lottie/lottie.dart';
 import 'package:pixca/controller/carousel-Controler.dart';
 import 'package:pixca/view/phoneScreen.dart';
 import 'package:pixca/view/settingsScreen.dart';
 import 'package:pixca/view/watchesScreenSample.dart';
 import 'package:pixca/view/wishList.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'accessoriesScreen.dart';
 import 'login.dart';
@@ -93,7 +95,7 @@ class _HomeSampleState extends State<HomeSample> {
                       MaterialPageRoute(
                         builder: (context) => LoginSample(),
                       ),
-                      (route) => false);
+                          (route) => false);
                 },
                 leading: Icon(
                   Icons.logout,
@@ -142,7 +144,7 @@ class _HomeSampleState extends State<HomeSample> {
                           ));
                     });
                   },
-                  child: Text("Phone")),
+                  child: Text("Phones")),
               TextButton(
                   onPressed: () {
                     setState(() {
@@ -167,15 +169,40 @@ class _HomeSampleState extends State<HomeSample> {
                   child: Text("Accessories")),
             ],
           ),
-          // Padding(
-          //   padding: const EdgeInsets.only(top: 30),
-          //   child: CarouselDemo(),
-          // ),
 
+          // Obx(() {
+          //   if (caroselController.carouselImages.isEmpty) {
+          //     return Shimmer.fromColors(
+          //       child: Text("Loading"),
+          //       baseColor: Colors.grey,
+          //       highlightColor: CupertinoColors.activeBlue,
+          //     );
+          //   } else {
+          //     return CarouselSlider.builder(
+          //       itemCount: caroselController.carouselImages.length,
+          //       itemBuilder: (context, index, realIndex) {
+          //         return InkWell(
+          //           onTap: () {
+          //             print("Hello");
+          //           },
+          //           child: Padding(
+          //             padding: EdgeInsets.all(10),
+          //             child: Image.network(caroselController.carouselImages[index]),
+          //           ),
+          //         );
+          //       },
+          //       options: CarouselOptions(height: 500.0, autoPlay: true),
+          //     );
+          //   }
+          // }),
           Obx(() {
             if (caroselController.carouselImages.isEmpty) {
-              return Center(
-                child: CircularProgressIndicator(),
+              return Center(heightFactor: 500.h,
+                widthFactor: 500.w,
+                child: SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: Lottie.asset('assect/animations/loadingLottie.json')),
               );
             } else {
               return CarouselSlider.builder(
@@ -196,42 +223,41 @@ class _HomeSampleState extends State<HomeSample> {
               );
             }
           }),
-
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "Sliding Containers",
-              style: TextStyle(fontSize: 30),
-            ),
-          ),
-          Obx(
-            () {
-              if (caroselController.brandImages.isEmpty) {
-                return CircularProgressIndicator();
-              } else {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Container(
-                    height: 150.h,
-                    color: Colors.white,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: caroselController.brandImages.length,
-                      itemBuilder: (context, index) {
-                        return Container(
+          Obx(() {
+            if (caroselController.brandImages.isEmpty) {
+              return Shimmer.fromColors(
+                child: CircularProgressIndicator(),
+                baseColor: Colors.grey,
+                highlightColor: Colors.black38,
+              );
+            } else {
+              return Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Container(
+                  height: 150.h,
+                  color: Colors.white,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: caroselController.brandImages.length,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          print("BrandImage");
+                        },
+                        child: Container(
                           width: 200,
                           margin: EdgeInsets.all(2),
-                          color: Colors.green[50],
-                          child: Image.network(
-                              caroselController.brandImages[index]),
-                        );
-                      },
-                    ),
+                          color: Colors.white60,
+                          child: Image.network(caroselController.brandImages[index]),
+                        ),
+                      );
+                    },
                   ),
-                );
-              }
-            },
-          ),
+                ),
+              );
+            }
+          }),
+
 
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -240,27 +266,43 @@ class _HomeSampleState extends State<HomeSample> {
               style: TextStyle(fontSize: 30),
             ),
           ),
-          SizedBox(
-            height: 505,
-            // Fixed height for the GridView
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Number of columns in the grid
-              ),
-              itemCount: 4, // Number of items in the grid
-              itemBuilder: (context, index) {
-                return Container(
-                  width: 400,
-                  margin: EdgeInsets.all(8),
-                  color: Colors.blue[100],
-                  child: Center(
-                    child: Text('Grid Item $index',
-                        style: TextStyle(color: Colors.white)),
+
+          Obx(
+                () {
+              if (caroselController.newLaunchedGrid.isEmpty) {
+                return Shimmer.fromColors(child: Text("Loading"),
+                    baseColor: Colors.grey,
+                    highlightColor: CupertinoColors.activeBlue);
+              } else {
+                return SizedBox(
+                  height: 505,
+                  // Fixed height for the GridView
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2, // Number of columns in the grid
+                    ),
+                    itemCount: 4, // Number of items in the grid
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          print("GridView");
+                        },
+                        child: Container(
+                          width: 400,
+                          margin: EdgeInsets.all(8),
+                          color: Colors.blue[50],
+                          child: Image.network(
+                              caroselController.newLaunchedGrid[index]),
+                        ),
+                      );
+                    },
                   ),
                 );
-              },
-            ),
+              }
+            },
           ),
+
+
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
@@ -302,11 +344,11 @@ class _HomeSampleState extends State<HomeSample> {
               color: Colors.grey[300],
               child: Center(
                   child: Text(
-                "End",
-                style: TextStyle(
-                  fontSize: 20,
-                ),
-              )),
+                    "End",
+                    style: TextStyle(
+                      fontSize: 20,
+                    ),
+                  )),
             ),
           )
         ],
@@ -314,27 +356,3 @@ class _HomeSampleState extends State<HomeSample> {
     );
   }
 }
-
-// class CarouselDemo extends StatelessWidget {
-//   final List<String> imageList = [
-//     'assect/images/carousielSlider/iPhoneList.jpeg',
-//     'assect/images/carousielSlider/Pixel-7a-5g.jpeg',
-//     'assect/images/carousielSlider/pixel-7a-onHand.jpg',
-//     'assect/images/carousielSlider/vivoT2X5G_1.jpg'
-//
-//   ];
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return CarouselSlider(
-//       options: CarouselOptions(height: 500.0, autoPlay: true,),
-//       items: imageList.map((item) {
-//         return Image.asset(
-//           item,
-//           fit: BoxFit.cover,
-//           width: 1000,
-//         );
-//       }).toList(),
-//     );
-//   }
-// }

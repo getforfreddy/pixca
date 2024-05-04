@@ -43,6 +43,7 @@ dependencies:
   get: ^4.6.6
   firebase_auth: ^4.19.4
   cloud_firestore: ^4.17.2
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +73,7 @@ flutter:
     - assect/animations/paymentPg.json
     - assect/animations/signUp.json
     - assect/animations/splashScreen.json
+    - assect/animations/loadingLottie.json
     - assect/images/carousielSlider/iPhoneList.jpeg
     - assect/images/carousielSlider/Pixel-7a-5g.jpeg
     - assect/images/carousielSlider/pixel-7a-onHand.jpg
