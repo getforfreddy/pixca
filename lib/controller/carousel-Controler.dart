@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -8,6 +6,7 @@ class ImageController extends GetxController {
   RxList<String> carouselImages = RxList<String>([]);
   RxList<String> brandImages = RxList<String>([]);
   RxList<String> newLaunchedGrid = RxList<String>([]);
+  RxList<String> gridPhoneName = RxList<String>([]);
 
   @override
   void onInit() {
@@ -15,6 +14,7 @@ class ImageController extends GetxController {
     fetchCaroselImages();
     fetchBrandImages();
     fetchNewLaunchedGrids();
+    fetchGridPhoneName();
   }
 
   //
@@ -53,6 +53,18 @@ class ImageController extends GetxController {
       if (snapshot.docs.isNotEmpty) {
         newLaunchedGrid.value =
             snapshot.docs.map((doc) => doc['GridImage'] as String).toList();
+      }
+    } catch (e) {}
+  }
+
+  fetchGridPhoneName() async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection("GridViewNewLaunched5g")
+          .get();
+      if (snapshot.docs.isNotEmpty) {
+        gridPhoneName.value =
+            snapshot.docs.map((e) => e['phoneName'] as String).toList();
       }
     } catch (e) {}
   }

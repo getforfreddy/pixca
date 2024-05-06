@@ -1,18 +1,23 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pixca/controller/carousel-Controler.dart';
+import 'package:pixca/controller/googleSignInController.dart';
 import 'package:pixca/view/phoneScreen.dart';
 import 'package:pixca/view/settingsScreen.dart';
 import 'package:pixca/view/watchesScreenSample.dart';
 import 'package:pixca/view/wishList.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../controller/getUserDataController.dart';
 import 'accessoriesScreen.dart';
 import 'login.dart';
 import 'orderScreen.dart';
@@ -26,6 +31,29 @@ class HomeSample extends StatefulWidget {
 
 class _HomeSampleState extends State<HomeSample> {
   ImageController caroselController = Get.put(ImageController());
+  GoogleController googleController = Get.put(GoogleController());
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+  final GetUserDataController _getUserDadtaController =
+      Get.put(GetUserDataController());
+
+  // PhoneNameController gridPhoneNameController=Get.put(GoogleController());
+
+  late final User user;
+  late List<QueryDocumentSnapshot<Object?>> userData = [];
+
+  @override
+  void initState() {
+    super.initState();
+    user = FirebaseAuth.instance.currentUser!;
+    _getUserData();
+  }
+
+  Future<void> _getUserData() async {
+    userData = await _getUserDadtaController.getUserData(user.uid);
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,14 +65,19 @@ class _HomeSampleState extends State<HomeSample> {
               padding: const EdgeInsets.only(top: 90),
               child: CircleAvatar(
                 radius: 70.r,
+                backgroundImage: NetworkImage(
+                  userData.isNotEmpty &&
+                          userData[0]['userImg'] != null &&
+                          userData[0]['userImg'].isNotEmpty
+                      ? userData[0]['userImg']
+                      : 'https://via.placeholder.com/120',
+                ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                "userName",
-                style: TextStyle(fontSize: 30),
-              ),
+                  "${userData.isNotEmpty ? userData[0]['username'] : 'N/A'}"),
             ),
             ListTile(
               leading: Icon(CupertinoIcons.cube_box),
@@ -89,13 +122,9 @@ class _HomeSampleState extends State<HomeSample> {
               trailing: Icon(Icons.arrow_forward_ios_sharp),
             ),
             ListTile(
-                onTap: () {
-                  Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LoginSample(),
-                      ),
-                      (route) => false);
+                onTap: () async {
+                  await googleController.signOutGoogle();
+                  print("*************** Logged out **************************************");
                 },
                 leading: Icon(
                   Icons.logout,
@@ -262,12 +291,26 @@ class _HomeSampleState extends State<HomeSample> {
                         onTap: () {
                           print("GridView");
                         },
-                        child: Container(
-                          width: 400,
-                          margin: EdgeInsets.all(8),
-                          color: Colors.blue[50],
-                          child: Image.network(
-                              caroselController.newLaunchedGrid[index]),
+                        child: Card(
+                          child: Column(
+                            children: [
+                              ClipRect(
+                                child: Image.network(
+                                  caroselController.newLaunchedGrid[index],
+                                  height: 200,
+                                ),
+                              ),
+                              SizedBox(
+                                height: 15,
+                              ),
+                              Text(
+                                caroselController.gridPhoneName[index],
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                          shape: Border(),
                         ),
                       );
                     },

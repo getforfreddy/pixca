@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pixca/controller/emailController.dart';
 import 'package:pixca/controller/googleSignInController.dart';
 import 'package:pixca/view/signUp.dart';
 import 'forgotPassword.dart';
@@ -19,7 +21,9 @@ class _LoginSampleState extends State<LoginSample> {
   final login = GlobalKey<FormState>();
   var userNameController = TextEditingController();
   var passwordController = TextEditingController();
-  GoogleController googleController=Get.put(GoogleController());
+  GoogleController googleController = Get.put(GoogleController());
+
+  EmailPassController emailPassController = Get.put(EmailPassController());
 
   @override
   Widget build(BuildContext context) {
@@ -139,44 +143,95 @@ class _LoginSampleState extends State<LoginSample> {
                                         )),
                                   ),
                                 ),
+
                                 SizedBox(
                                   width: 160.w,
                                   height: 40.h,
                                   child: ElevatedButton(
-                                      onPressed: () {
-                                        if (login.currentState!.validate()) {
-                                          // ScaffoldMessenger.of(context)
-                                          //     .showSnackBar(SnackBar(content: Text("Sucess")));
-                                          Navigator.pushAndRemoveUntil(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    HomeSample(),
-                                              ),
-                                              (route) => false);
+                                    onPressed: () async {
+                                      if (login.currentState!.validate()) {
+                                        emailPassController.updateLoading();
+                                        try {
+                                          UserCredential? userCredential =
+                                          await emailPassController.signinUser(
+                                            userNameController.text,
+                                            passwordController.text,
+                                          );
+                                          if (userCredential != null &&
+                                              userCredential.user!.emailVerified) {
+                                            final user = userCredential.user;
+                                            Get.offAll(() => const HomeSample(),
+                                                transition: Transition.leftToRightWithFade);
+                                          }
+                                        } catch (e) {
+                                          print(e);
+                                          Get.snackbar('Error', emailPassController.errorMessage);
+                                        } finally {
+                                          emailPassController.updateLoading();
                                         }
-                                      },
-                                      child: Text("Login")),
+                                      } else {
+                                        // Display the error message in a snackbar if there is one
+                                        Get.snackbar('Error', emailPassController.errorMessage);
+                                      }
+                                    },
+                                    child: Text("Login"),
+                                  ),
                                 ),
+
+                                // SizedBox(
+                                //   width: 160.w,
+                                //   height: 40.h,
+                                //   child: ElevatedButton(
+                                //       onPressed: () async {
+                                //         if (login.currentState!.validate()) {
+                                //           emailPassController.updateLoading();
+                                //           try {
+                                //             UserCredential? userCredential =
+                                //                 await emailPassController
+                                //                     .signinUser(
+                                //               userNameController.text,
+                                //               passwordController.text,
+                                //             );
+                                //             if (userCredential!
+                                //                 .user!.emailVerified) {
+                                //               final user = userCredential.user;
+                                //               Get.offAll(
+                                //                   () => const HomeSample(),
+                                //                   transition: Transition
+                                //                       .leftToRightWithFade);
+                                //             }
+                                //           } catch (e) {
+                                //             print(e);
+                                //           } finally {
+                                //             emailPassController.updateLoading();
+                                //           }
+                                //         } else {
+                                //          print("Something went wrong***************************");
+                                //         }
+                                //       },
+                                //       child: Text("Login")),
+                                // ),
                                 SizedBox(
                                   height: 100,
-                                 width: 240 ,
-                                  child: TextButton(onPressed: () {
-                                    setState(() {
-                                      googleController.signInWithGoogle();
-                                    });
-
-                                  }, child: Row(
-                                    children: [
-                                      Center(
-                                        child: SizedBox(
-                                            width:80,
-                                            height: 80,
-                                            child: Image.asset("assect/images/icones/GoogleSymbol.png")),
-                                      ),
-                                      Text("Sign in with google"),
-                                    ],
-                                  )),
+                                  width: 240,
+                                  child: TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          googleController.signInWithGoogle();
+                                        });
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Center(
+                                            child: SizedBox(
+                                                width: 80,
+                                                height: 80,
+                                                child: Image.asset(
+                                                    "assect/images/icones/GoogleSymbol.png")),
+                                          ),
+                                          Text("Sign in with google"),
+                                        ],
+                                      )),
                                 ),
                                 // Padding(
                                 //   padding: const EdgeInsets.only(top: 12),

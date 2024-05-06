@@ -20,55 +20,71 @@ class EmailPassController extends GetxController {
 
   FirebaseAuth get auth => _auth;
 
-  Future<void> signupUser(String email, String password, String name) async {
+  Future<void> signupUser(String email, String password, String name, String phone) async {
     try {
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
+// Check if the email is already registered
+      bool isEmailRegistered = await isEmailAlreadyRegistered(email);
 
-      await userCredential.user!.updateDisplayName(name);
-      await userCredential.user!.updateEmail(email);
-      UserModel userModel = UserModel(
-        uId: userCredential.user!.uid,
-        username: userCredential.user!.displayName ?? name,
-        email: userCredential.user!.email ?? '',
-        phone: userCredential.user!.phoneNumber ?? '',
-        userImg: userCredential.user!.photoURL ??
-            'https://firebasestorage.googleapis.com/v0/b/dealninja-2b50b.appspot.com/o/User.png?alt=media&token=b2e7d3ec-7ff6-4567-84b5-d9cee26253f2',
-        country: '',
-        userAddress: '',
-        createdOn: DateTime.now(),
-      );
-      try {
-        await FirebaseFirestore.instance // Save user data to Firestore
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .set(userModel.toMap());
-      } catch (error) {
-        print('Error saving user data to Firestore: $error');
-        Get.snackbar(
-          "Error",
-          "$error",
-          snackPosition: SnackPosition.BOTTOM,
+      if (!isEmailRegistered) {
+
+        // String newName = name.capitalizeFirst!;
+        String newName = name.split(' ')
+            .map((word) => word.substring(0, 1).toUpperCase() + word.substring(1))
+            .join(' ');
+
+        await userCredential.user!.updateDisplayName(newName);
+        await userCredential.user!.updateEmail(email);
+
+        UserModel userModel = UserModel(
+          uId: userCredential.user!.uid,
+          username: userCredential.user!.displayName ?? newName,
+          email: userCredential.user!.email ?? '',
+          phone: userCredential.user!.phoneNumber ?? phone,
+          userImg: userCredential.user!.photoURL?.toString() ??
+              'https://firebasestorage.googleapis.com/v0/b/pixca-d82c7.appspot.com/o/profile-image%2Fprofile.png?alt=media&token=55da918f-38d0-4cd2-8a24-3567a61367d3',
+          country: 'NA',
+          userAddress: 'NA',
+          createdOn: DateTime.now(),
         );
+
+        try {
+          await FirebaseFirestore.instance // Save user data to Firestore
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set(userModel.toMap());
+        } catch (e) {
+          print("Error saving user data: $e");
+        }
+      } else {
+        print("Email already registered!");
       }
-      Get.snackbar('Success', 'Registration Successful');
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        Get.snackbar('Error', 'Password Provided is too weak');
-      } else if (e.code == 'email-already-in-use') {
-        Get.snackbar('Error', 'Email Provided already Exists');
-      }
+
     } catch (e) {
       Get.snackbar('Error', e.toString());
     }
   }
 
+  // Function to check if the email is already registered
+  Future<bool> isEmailAlreadyRegistered(String email) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    return querySnapshot.docs.isNotEmpty;
+  }
+
   User? get currentUser => _auth.currentUser;
+  String errorMessage = '';
 
   Future<UserCredential?> signinUser(
       String userEmail, String userPassword) async {
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
         email: userEmail,
         password: userPassword,
       );
@@ -76,14 +92,16 @@ class EmailPassController extends GetxController {
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        Get.snackbar('Error', 'No user Found with this Email');
+        errorMessage = 'No user found with this email';
       } else if (e.code == 'wrong-password') {
-        Get.snackbar('Error', 'Password did not match');
+        errorMessage = 'Incorrect password';
       }
+      update(); // Notify the UI that the errorMessage has changed
     } catch (e) {
-      print(e);
+      print('Error signing in: $e');
     }
   }
+
 
   Future<void> forgotPassword(
     String userEmail,

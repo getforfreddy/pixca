@@ -26,15 +26,16 @@ class _SignUpPageState extends State<SignUpPage> {
 
   var nameController = TextEditingController();
   var emailController = TextEditingController();
+  var phoneController = TextEditingController();
 
-  final GoogleController _googleSignInController =
-  Get.put(GoogleController());
+  final GoogleController _googleSignInController = Get.put(GoogleController());
   final EmailPassController _emailPassController =
-  Get.put(EmailPassController());
+      Get.put(EmailPassController());
 
   var userNamergx = RegExp(
       r"(^[A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})");
-  var emailAddress = RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+  var emailAddress =
+      RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
   var passwordrgx = RegExp(
       r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*?_~]).{8,}$');
 
@@ -102,6 +103,29 @@ class _SignUpPageState extends State<SignUpPage> {
                         hintText: "Enter email id",
                       ),
                       keyboardType: TextInputType.emailAddress,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: SizedBox(
+                    width: 400,
+                    child: TextFormField(
+                      controller: phoneController,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return "Please enter phone number";
+                        }
+                        return null;
+                      },
+                      style: TextStyle(fontSize: 20),
+                      cursorColor: Colors.green,
+                      decoration: InputDecoration(
+                        label: Text("Phone"),
+                        border: OutlineInputBorder(),
+                        hintText: "Enter phone number",
+                      ),
+                      keyboardType: TextInputType.phone,
                     ),
                   ),
                 ),
@@ -188,29 +212,29 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.only(top: 15),
                   child: TextButton(
                       onPressed: () async {
                         if (registrationkey.currentState!.validate()) {
                           _emailPassController.updateLoading();
                           try {
                             await _emailPassController.signupUser(
-                              emailController.text,
-                              passwordController.text,
-                              nameController.text,
-                            );
-                            if (_emailPassController.currentUser !=
-                                null) {
+                                emailController.text,
+                                passwordController.text,
+                                nameController.text,
+                                phoneController.text
+                                // phoneController.text,
+
+                                );
+                            if (_emailPassController.currentUser != null) {
                               Get.off(
-                                      () => EmailValidationScreen(
-                                      user: _emailPassController
-                                          .currentUser!),
-                                  transition:
-                                  Transition.leftToRightWithFade);
+                                  () => EmailValidationScreen(
+                                      user: _emailPassController.currentUser!),
+                                  transition: Transition.leftToRightWithFade);
                             } else {
                               // No user is currently authenticated
-                              Get.snackbar('No user is',
-                                  'currently authenticated');
+                              Get.snackbar(
+                                  'No user is', 'currently authenticated');
                             }
                           } catch (e) {
                             Get.snackbar('Error', e.toString());
@@ -222,14 +246,15 @@ class _SignUpPageState extends State<SignUpPage> {
                       child: Text("SignUp")),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(30.0),
+                  padding: const EdgeInsets.only(bottom: 22),
                   child: TextButton(
                       onPressed: () {
-                        Navigator.pushReplacement(
+                        Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
                               builder: (context) => LoginSample(),
-                            ));
+                            ),
+                            (route) => false);
                       },
                       child: Text("Alredy have an account? Login")),
                 ),
