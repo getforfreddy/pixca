@@ -19,7 +19,6 @@ import 'package:shimmer/shimmer.dart';
 
 import '../controller/getUserDataController.dart';
 import 'accessoriesScreen.dart';
-import 'login.dart';
 import 'orderScreen.dart';
 
 class HomeSample extends StatefulWidget {
@@ -239,7 +238,7 @@ class _HomeSampleState extends State<HomeSample> {
               return Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: Container(
-                  height: 150.h,
+                  height: 120.h,
                   color: Colors.white,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
@@ -249,12 +248,20 @@ class _HomeSampleState extends State<HomeSample> {
                         onTap: () {
                           print("BrandImage");
                         },
-                        child: Container(
-                          width: 200,
-                          margin: EdgeInsets.all(2),
-                          color: Colors.white60,
-                          child: Image.network(
-                              caroselController.brandImages[index]),
+                        child: ClipOval(
+                          child: CircleAvatar(
+                          
+                            //child: CircleAvatar(),
+                            radius: 100,
+                          
+                            backgroundImage: NetworkImage(
+                          
+                                caroselController.brandImages[index],
+
+                            ),
+                            backgroundColor: Colors.transparent,
+                            //child: ,
+                          ),
                         ),
                       );
                     },

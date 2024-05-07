@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pixca/view/homeScreen.dart';
 import 'package:pixca/view/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/userModel.dart';
 
@@ -30,6 +31,10 @@ class GoogleController extends GetxController {
         final UserCredential userCredential =
             await firebaseAuth.signInWithCredential(credential);
         final User? user = userCredential.user;
+
+        // Save session state
+        await saveSession(true);
+
         if (user != null) {
           UserModel userModel = UserModel(
             uId: user.uid,
@@ -64,9 +69,24 @@ class GoogleController extends GetxController {
       await _googelSignin.signOut();
       user(null);
       print("User Signed Out");
+
+      // Clear session state
+      await saveSession(false);
+
       Get.offAll(() => const LoginSample());
     } catch (e) {
       print("Errir Signing Out: $e");
     }
   }
+
+  Future<bool> isLoggedIn() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isLoggedIn') ?? false;
+  }
+
+  Future<void> saveSession(bool isLoggedIn) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', isLoggedIn);
+  }
+
 }

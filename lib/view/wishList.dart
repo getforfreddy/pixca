@@ -13,6 +13,18 @@ class _WishListState extends State<WishList> {
       appBar: AppBar(
         title: Text("Wishlist"),
       ),
+      body: Column(
+        children: [
+          Card(
+            child: Image.network(''),
+          ),
+          Container(
+            child: Text("Phone Name"),
+
+          )
+
+        ],
+      ),
     );
   }
 }

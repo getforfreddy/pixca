@@ -68,4 +68,10 @@ class ImageController extends GetxController {
       }
     } catch (e) {}
   }
+
+  fetchWishList()async{
+
+
+
+  }
 }

@@ -28,7 +28,7 @@ class _SignUpPageState extends State<SignUpPage> {
   var emailController = TextEditingController();
   var phoneController = TextEditingController();
 
-  final GoogleController _googleSignInController = Get.put(GoogleController());
+  // final GoogleController _googleSignInController = Get.put(GoogleController());
   final EmailPassController _emailPassController =
       Get.put(EmailPassController());
 
@@ -38,6 +38,7 @@ class _SignUpPageState extends State<SignUpPage> {
       RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
   var passwordrgx = RegExp(
       r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*?_~]).{8,}$');
+  var phonergr = RegExp(r"^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$");
 
   @override
   Widget build(BuildContext context) {
@@ -115,11 +116,12 @@ class _SignUpPageState extends State<SignUpPage> {
                       validator: (value) {
                         if (value!.isEmpty) {
                           return "Please enter phone number";
+                        } else if (!phonergr.hasMatch(value)) {
+                          return "please enter a valid phone number";
                         }
                         return null;
                       },
                       style: TextStyle(fontSize: 20),
-                      cursorColor: Colors.green,
                       decoration: InputDecoration(
                         label: Text("Phone"),
                         border: OutlineInputBorder(),
@@ -144,9 +146,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         return null;
                       },
                       style: TextStyle(fontSize: 20.sp),
-                      cursorColor: Colors.green,
-                      // cursorHeight: 40,
-                      // cursorWidth: 10,
                       decoration: InputDecoration(
                           label: Text("Password"),
                           border: OutlineInputBorder(),
@@ -184,9 +183,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         return null;
                       },
                       style: TextStyle(fontSize: 20.sp),
-                      cursorColor: Colors.green,
-                      // cursorHeight: 40,
-                      // cursorWidth: 10,
                       decoration: InputDecoration(
                           label: Text("Confirm password"),
                           border: OutlineInputBorder(),

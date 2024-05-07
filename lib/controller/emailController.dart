@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:pixca/view/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/userModel.dart';
 
@@ -89,6 +90,9 @@ class EmailPassController extends GetxController {
         password: userPassword,
       );
 
+      // Save session state
+      await saveSession(true);
+
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -122,4 +126,15 @@ class EmailPassController extends GetxController {
       );
     }
   }
+
+  Future<bool> isLoggedIn() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isLoggedIn') ?? false;
+  }
+
+  Future<void> saveSession(bool isLoggedIn) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', isLoggedIn);
+  }
+
 }
