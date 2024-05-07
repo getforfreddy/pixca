@@ -27,6 +27,7 @@ class ImageController extends GetxController {
       if (snapshot.docs.isNotEmpty) {
         carouselImages.value =
             snapshot.docs.map((doc) => doc['Image'] as String).toList();
+        update(); // Update RxList after modification
       }
     } catch (e) {}
   }

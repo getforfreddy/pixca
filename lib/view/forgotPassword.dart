@@ -18,8 +18,8 @@ class _ForgotPasswordSampleState extends State<ForgotPasswordSample> {
 
   var emailAddressForgot =
       RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
-  final EmailPassController _emailPassController = Get.put(EmailPassController());
-
+  final EmailPassController _emailPassController =
+      Get.put(EmailPassController());
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +30,8 @@ class _ForgotPasswordSampleState extends State<ForgotPasswordSample> {
       body: ListView(
         children: [
           Center(
-            child: SizedBox(
-                height: 170.h,
-                width: 250.w,
-                child: Lottie.asset('')),
+            child:
+                SizedBox(height: 170.h, width: 250.w, child: Lottie.asset('')),
           ),
           Center(
               child: Padding(
@@ -80,21 +78,16 @@ class _ForgotPasswordSampleState extends State<ForgotPasswordSample> {
               child: ElevatedButton(
                   onPressed: () {
                     if (forgotKey.currentState!.validate()) {
-
-
-                      String forgotEmail=emailController.text.trim();
-
-                      if(forgotEmail.isEmpty){
+                      String forgotEmail = emailController.text.trim();
+                      if (forgotEmail.isEmpty) {
                         Get.snackbar(
                           "Error",
                           "Please enter all details",
                           snackPosition: SnackPosition.BOTTOM,
                         );
-                      }
-                      else{
+                      } else {
                         _emailPassController.forgotPassword(forgotEmail);
                       }
-                     
                     }
                   },
                   child: Text("Submit")),

@@ -212,9 +212,16 @@ class _HomeSampleState extends State<HomeSample> {
               return CarouselSlider.builder(
                 itemCount: caroselController.carouselImages.length,
                 itemBuilder: (context, index, realIndex) {
+                  final uid = caroselController.carouselImages[index];
+
                   return InkWell(
                     onTap: () {
-                      print("Hello");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailsPage(uid: uid),
+                        ),
+                      );
                     },
                     child: Padding(
                       padding: EdgeInsets.all(10),
@@ -375,6 +382,23 @@ class _HomeSampleState extends State<HomeSample> {
             ),
           )
         ],
+      ),
+    );
+  }
+}
+class DetailsPage extends StatelessWidget {
+  final String uid;
+
+  const DetailsPage({Key? key, required this.uid}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Details'),
+      ),
+      body: Center(
+        child: Text('UID: $uid'),
       ),
     );
   }
