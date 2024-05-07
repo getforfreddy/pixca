@@ -3,10 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pixca/view/emailValidationScreen.dart';
-
 import '../controller/emailController.dart';
-import '../controller/googleSignInController.dart';
-import 'homeScreen.dart';
 import 'login.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -157,14 +154,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                       isPassVisible = !isPassVisible;
                                     });
                                   },
-                                  icon: Icon(Icons.visibility))
+                                  icon: Icon(Icons.visibility_outlined))
                               : IconButton(
                                   onPressed: () {
                                     setState(() {
                                       isPassVisible = !isPassVisible;
                                     });
                                   },
-                                  icon: Icon(Icons.visibility_off))),
+                                  icon: Icon(Icons.visibility_off_outlined))),
                       obscureText: isPassVisible,
                       keyboardType: TextInputType.visiblePassword,
                     ),
@@ -194,14 +191,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                       isPasswordVisible = !isPasswordVisible;
                                     });
                                   },
-                                  icon: Icon(Icons.visibility))
+                                  icon: Icon(Icons.visibility_outlined))
                               : IconButton(
                                   onPressed: () {
                                     setState(() {
                                       isPasswordVisible = !isPasswordVisible;
                                     });
                                   },
-                                  icon: Icon(Icons.visibility_off))),
+                                  icon: Icon(Icons.visibility_off_outlined))),
                       obscureText: isPasswordVisible,
                       keyboardType: TextInputType.visiblePassword,
                     ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+
+import '../controller/emailController.dart';
 
 class ForgotPasswordSample extends StatefulWidget {
   const ForgotPasswordSample({super.key});
@@ -15,6 +18,8 @@ class _ForgotPasswordSampleState extends State<ForgotPasswordSample> {
 
   var emailAddressForgot =
       RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+  final EmailPassController _emailPassController = Get.put(EmailPassController());
+
 
   @override
   Widget build(BuildContext context) {
@@ -75,10 +80,21 @@ class _ForgotPasswordSampleState extends State<ForgotPasswordSample> {
               child: ElevatedButton(
                   onPressed: () {
                     if (forgotKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('Success'),
-                        duration: Duration(seconds: 3),
-                      ));
+
+
+                      String forgotEmail=emailController.text.trim();
+
+                      if(forgotEmail.isEmpty){
+                        Get.snackbar(
+                          "Error",
+                          "Please enter all details",
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      }
+                      else{
+                        _emailPassController.forgotPassword(forgotEmail);
+                      }
+                     
                     }
                   },
                   child: Text("Submit")),

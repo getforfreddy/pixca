@@ -1,9 +1,13 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pixca/view/homeScreen.dart';
 
 import 'login.dart';
 
@@ -15,19 +19,40 @@ class SplashScreenSample extends StatefulWidget {
 }
 
 class _SplashScreenSampleState extends State<SplashScreenSample> {
+  late User? user;
+
   @override
   void initState() {
+    super.initState();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitDown,
       DeviceOrientation.portraitUp,
     ]);
-    // TODO: implement initState
-    super.initState();
-    Timer.periodic(Duration(seconds: 3), (timer) {
-      Navigator.pushReplacement(context, MaterialPageRoute(
-        builder: (context) => LoginSample(),
-      ),);
+
+    // Delay for 7 seconds before checking login status
+    Future.delayed(Duration(seconds: 7), () {
+      logInCheck(context);
     });
+  }
+
+  Future<void> logInCheck(BuildContext context) async {
+    // Get current user
+    user = FirebaseAuth.instance.currentUser;
+
+    // Check if user is logged in
+    if (user != null) {
+      // User is logged in, navigate to HomeScreen
+      await Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeSample()),
+      );
+    } else {
+      // User is not logged in, navigate to LoginScreen
+      await Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginSample()),
+      );
+    }
   }
 
   @override
