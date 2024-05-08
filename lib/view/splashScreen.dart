@@ -30,7 +30,7 @@ class _SplashScreenSampleState extends State<SplashScreenSample> {
     ]);
 
     // Delay for 7 seconds before checking login status
-    Future.delayed(Duration(seconds: 7), () {
+    Future.delayed(Duration(seconds: 3), () {
       logInCheck(context);
     });
   }

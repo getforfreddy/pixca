@@ -12,6 +12,7 @@ import 'package:lottie/lottie.dart';
 import 'package:pixca/controller/carousel-Controler.dart';
 import 'package:pixca/controller/googleSignInController.dart';
 import 'package:pixca/view/phoneScreen.dart';
+import 'package:pixca/view/productBrandList.dart';
 import 'package:pixca/view/settingsScreen.dart';
 import 'package:pixca/view/watchesScreenSample.dart';
 import 'package:pixca/view/wishList.dart';
@@ -123,7 +124,8 @@ class _HomeSampleState extends State<HomeSample> {
             ListTile(
                 onTap: () async {
                   await googleController.signOutGoogle();
-                  print("*************** Logged out **************************************");
+                  print(
+                      "*************** Logged out **************************************");
                 },
                 leading: Icon(
                   Icons.logout,
@@ -253,21 +255,22 @@ class _HomeSampleState extends State<HomeSample> {
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
-                          print("BrandImage");
+                          String selectedBrandName = caroselController.brandNames[index]; // Accessing brandNames RxList
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductListPage(brand: selectedBrandName),
+                            ),
+                          );
                         },
+
                         child: ClipOval(
                           child: CircleAvatar(
-                          
-                            //child: CircleAvatar(),
                             radius: 100,
-                          
                             backgroundImage: NetworkImage(
-                          
-                                caroselController.brandImages[index],
-
+                              caroselController.brandImages[index],
                             ),
                             backgroundColor: Colors.transparent,
-                            //child: ,
                           ),
                         ),
                       );
@@ -386,6 +389,7 @@ class _HomeSampleState extends State<HomeSample> {
     );
   }
 }
+
 class DetailsPage extends StatelessWidget {
   final String uid;
 

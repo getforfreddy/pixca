@@ -7,7 +7,7 @@ class ImageController extends GetxController {
   RxList<String> brandImages = RxList<String>([]);
   RxList<String> newLaunchedGrid = RxList<String>([]);
   RxList<String> gridPhoneName = RxList<String>([]);
-
+  RxList<String> brandNames = RxList<String>([]);
   @override
   void onInit() {
     super.onInit();
@@ -22,7 +22,7 @@ class ImageController extends GetxController {
     try {
       //   Connecting to collection
       QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('CaresaulSlider').get();
+      await FirebaseFirestore.instance.collection('CaresaulSlider').get();
       // Check the collection is not empty,atleast one doc
       if (snapshot.docs.isNotEmpty) {
         carouselImages.value =
@@ -35,16 +35,25 @@ class ImageController extends GetxController {
   //
   fetchBrandImages() async {
     try {
-      //   Connecting to collection
-      QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('brand-Images').get();
-      // Check the collection is not empty,atleast one doc
+      QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('brand-Images').get();
       if (snapshot.docs.isNotEmpty) {
-        brandImages.value =
-            snapshot.docs.map((doc) => doc['images'] as String).toList();
+        List<String> images = [];
+        List<String> names = []; // Renamed the brand names list to avoid conflict
+        snapshot.docs.forEach((doc) {
+          String imageUrl = doc['images'] as String;
+          String brandName = doc['brand'] as String;
+          images.add(imageUrl);
+          names.add(brandName);
+        });
+        brandImages.value = images;
+        brandNames.value = names; // Assign the names to the brandNames RxList
       }
-    } catch (e) {}
+    } catch (e) {
+      print('Error fetching brand images: $e'); // Log the error for debugging
+    }
   }
+
+
 
   fetchNewLaunchedGrids() async {
     try {
