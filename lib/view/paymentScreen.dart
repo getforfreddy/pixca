@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -17,7 +19,8 @@ class _PaymentSampleState extends State<PaymentSample> {
 
   TextEditingController pinCodeController=TextEditingController();
   TextEditingController housenoController=TextEditingController();
-
+  TextEditingController nameController=TextEditingController();
+  TextEditingController phoneController=TextEditingController();
   TextEditingController cityController=TextEditingController();
 
   TextEditingController roadnameController=TextEditingController();
@@ -72,15 +75,18 @@ class _PaymentSampleState extends State<PaymentSample> {
       setState(() {
         address =
             '${place.street}, ${place.subLocality},'
-                ' ${place.subAdministrativeArea}, ${place.postalCode}, '
+                ' ${place.postalCode}, '
                 '${place.administrativeArea},${place.name}';
         pincode=place.postalCode;
-        city=place.subAdministrativeArea;
         houseno=place.name;
-       // pinCodeController.text=pincode.toString();
-        cityController.text=city.toString();
+        roadname=place.street;
+        city=place.subLocality;
+        state= place.administrativeArea;
+        housenoController.text=houseno.toString();
         roadnameController.text=roadname.toString();
-
+        cityController.text=city.toString();
+        stateController.text=state.toString();
+        pinCodeController.text=pincode.toString();
       });
     }).catchError((e) {
       debugPrint(e);
@@ -101,10 +107,14 @@ class _PaymentSampleState extends State<PaymentSample> {
           ),
           Form(child: Column(
             children: [
-              TextFormField(),
-              TextFormField(),
-              TextFormField(),
-              TextFormField(),
+
+              TextFormField(
+                controller: housenoController,
+                decoration:
+                InputDecoration(
+                    label: Text("House number")
+                ),
+              ),
               TextFormField(
                 controller: roadnameController,
                 decoration:
@@ -116,7 +126,14 @@ class _PaymentSampleState extends State<PaymentSample> {
                 controller: cityController,
                 decoration:
                 InputDecoration(
-                    label: Text("City")
+                    label: Text("Road name or area")
+                ),
+              ),
+              TextFormField(
+                controller: stateController,
+                decoration:
+                InputDecoration(
+                    label: Text("State")
                 ),
               ),
               TextFormField(
