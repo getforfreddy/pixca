@@ -232,7 +232,7 @@ class _HomeSampleState extends State<HomeSample> {
                     ),
                   );
                 },
-                options: CarouselOptions(height: 500.0, autoPlay: true),
+                options: CarouselOptions(height:300.0, autoPlay: true),
               );
             }
           }),
@@ -247,7 +247,7 @@ class _HomeSampleState extends State<HomeSample> {
               return Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: Container(
-                  height: 120.h,
+                  height: 110.h,
                   color: Colors.white,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,

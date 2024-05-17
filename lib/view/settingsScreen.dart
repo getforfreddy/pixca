@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pixca/view/paymentScreen.dart';
 import 'package:pixca/view/profileScreen.dart';
 import 'about.dart';
 import 'helpAndSupport.dart';
@@ -74,6 +75,25 @@ class _SettingsSampleState extends State<SettingsSample> {
               ),
             ),
           ),
+
+          Card(
+            elevation: 3,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentSample(),
+                      ));
+                },
+                leading: Icon(Icons.location_on_outlined),
+                title: Text("Address"),
+                trailing: Icon(Icons.arrow_forward_ios_sharp),
+              ),
+            ),
+          ),
           Card(
             elevation: 3,
             child: Padding(
@@ -87,11 +107,12 @@ class _SettingsSampleState extends State<SettingsSample> {
                       ));
                 },
                 leading: Icon(Icons.question_mark),
-                title: Text("Account"),
+                title: Text("About"),
                 trailing: Icon(Icons.arrow_forward_ios_sharp),
               ),
             ),
           ),
+
 
         ],
       ),
