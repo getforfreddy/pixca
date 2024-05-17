@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,8 +12,17 @@ class PaymentSample extends StatefulWidget {
 }
 
 class _PaymentSampleState extends State<PaymentSample> {
-  String? address;
+  String? address, pincode, state, houseno, city, roadname;
   Position? _position;
+
+  TextEditingController pinCodeController=TextEditingController();
+  TextEditingController housenoController=TextEditingController();
+
+  TextEditingController cityController=TextEditingController();
+
+  TextEditingController roadnameController=TextEditingController();
+  TextEditingController stateController=TextEditingController();
+
 
   Future<bool> checkPermissionPhone() async {
     bool isLocationEnabled;
@@ -42,48 +53,87 @@ class _PaymentSampleState extends State<PaymentSample> {
     return true;
   }
 
-  Future<void>getCurrentLocation()async{
-    final HasPermission= await checkPermissionPhone();
-    if(!HasPermission ) return;
+  Future<void> getCurrentLocation() async {
+    final HasPermission = await checkPermissionPhone();
+    if (!HasPermission) return;
     await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-    .then((Position position){
+        .then((Position position) {
       setState(() {
-        _position=position;
+        _position = position;
         _getAddressFromLatLng(_position!);
       });
-    }).catchError((e){
-
-    });
+    }).catchError((e) {});
   }
 
-
   Future<void> _getAddressFromLatLng(Position position) async {
-    await placemarkFromCoordinates(
-        _position!.latitude, _position!.longitude)
+    await placemarkFromCoordinates(_position!.latitude, _position!.longitude)
         .then((List<Placemark> placemarks) {
       Placemark place = placemarks[0];
       setState(() {
         address =
-        '${place.street}, ${place.subLocality}, ${place.subAdministrativeArea}, ${place.postalCode}, ${place.country}';
+            '${place.street}, ${place.subLocality},'
+                ' ${place.subAdministrativeArea}, ${place.postalCode}, '
+                '${place.administrativeArea},${place.name}';
+        pincode=place.postalCode;
+        city=place.subAdministrativeArea;
+        houseno=place.name;
+       // pinCodeController.text=pincode.toString();
+        cityController.text=city.toString();
+        roadnameController.text=roadname.toString();
+
       });
     }).catchError((e) {
       debugPrint(e);
     });
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text("Address"),
+      ),
       body: Column(
         children: [
-          Text("Address:  ${address?? ''}"),
-          ElevatedButton(onPressed: () {
-            getCurrentLocation();
-          }, child: Text("Use my location"))
+          Text(
+            "${address ?? ''}",
+            style: TextStyle(fontSize: 20),
+          ),
+          Form(child: Column(
+            children: [
+              TextFormField(),
+              TextFormField(),
+              TextFormField(),
+              TextFormField(),
+              TextFormField(
+                controller: roadnameController,
+                decoration:
+                InputDecoration(
+                    label: Text("LandMark")
+                ),
+              ),
+              TextFormField(
+                controller: cityController,
+                decoration:
+                InputDecoration(
+                    label: Text("City")
+                ),
+              ),
+              TextFormField(
+                controller: pinCodeController,
+               decoration:
+                InputDecoration(
+                  label: Text("Pincode")
+                ),
+              ),
+            ],
+          )),
+          ElevatedButton(
+              onPressed: () {
+                getCurrentLocation();
+              },
+              child: Text("Use my location"))
+
         ],
       ),
     );
