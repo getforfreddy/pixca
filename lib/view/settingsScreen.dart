@@ -13,6 +13,12 @@ class SettingsSample extends StatefulWidget {
 }
 
 class _SettingsSampleState extends State<SettingsSample> {
+  late TextEditingController phoneController;
+  @override
+  void initState() {
+    super.initState();
+    phoneController = TextEditingController(); // Initialize phoneController here
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

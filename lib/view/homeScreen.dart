@@ -14,6 +14,7 @@ import 'package:pixca/controller/googleSignInController.dart';
 import 'package:pixca/view/phoneScreen.dart';
 import 'package:pixca/view/productBrandList.dart';
 import 'package:pixca/view/settingsScreen.dart';
+import 'package:pixca/view/upload_file.dart';
 import 'package:pixca/view/watchesScreenSample.dart';
 import 'package:pixca/view/wishList.dart';
 import 'package:shimmer/shimmer.dart';
@@ -116,6 +117,20 @@ class _HomeSampleState extends State<HomeSample> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => SettingsSample(),
+                      ));
+                });
+              },
+              trailing: Icon(Icons.arrow_forward_ios_sharp),
+            ),
+            ListTile(
+              leading: Icon(Icons.photo_camera_back),
+              title: Text("Upload image"),
+              onTap: () {
+                setState(() {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UploadImageFile(),
                       ));
                 });
               },
