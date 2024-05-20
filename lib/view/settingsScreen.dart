@@ -91,7 +91,7 @@ class _SettingsSampleState extends State<SettingsSample> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PaymentSample(),
+                        builder: (context) => PaymentPage(productData: Map(), totalAmount: double.minPositive),
                       ));
                 },
                 leading: Icon(Icons.location_on_outlined),

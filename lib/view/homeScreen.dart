@@ -404,7 +404,6 @@ class _HomeSampleState extends State<HomeSample> {
     );
   }
 }
-
 class DetailsPage extends StatelessWidget {
   final String uid;
 
@@ -422,3 +421,4 @@ class DetailsPage extends StatelessWidget {
     );
   }
 }
+

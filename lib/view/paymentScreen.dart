@@ -1,157 +1,115 @@
-import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 
-class PaymentSample extends StatefulWidget {
-  const PaymentSample({super.key});
+class PaymentPage extends StatefulWidget {
+  final Map<String, dynamic> productData;
+  final double totalAmount;
+
+  const PaymentPage({
+    Key? key,
+    required this.productData,
+    required this.totalAmount,
+  }) : super(key: key);
 
   @override
-  State<PaymentSample> createState() => _PaymentSampleState();
+  _PaymentPageState createState() => _PaymentPageState();
 }
 
-class _PaymentSampleState extends State<PaymentSample> {
-  String? address, pincode, state, houseno, city, roadname;
-  Position? _position;
+class _PaymentPageState extends State<PaymentPage> {
+  bool _showProductDetails = false;
+  double _totalAmount = 0.0;
 
-  TextEditingController pinCodeController=TextEditingController();
-  TextEditingController housenoController=TextEditingController();
-  TextEditingController nameController=TextEditingController();
-  TextEditingController phoneController=TextEditingController();
-  TextEditingController cityController=TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _totalAmount = widget.totalAmount;
+  }
 
-  TextEditingController roadnameController=TextEditingController();
-  TextEditingController stateController=TextEditingController();
+  Future<void> placeOrderAndGetTotalAmount(Map<String, dynamic> productData) async {
+    double price = double.parse(productData['price'].toString());
+    double salesTax = 0.025; // 2.5% sales tax
+    double totalAmount = price * (1 + salesTax);
 
+    final orderCollection = FirebaseFirestore.instance.collection('orders');
 
-  Future<bool> checkPermissionPhone() async {
-    bool isLocationEnabled;
-    LocationPermission permission;
-    isLocationEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!isLocationEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Loction is disabled, please enable your loction")));
-      return false;
-    }
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Loction is disabled")));
+    // Check if the item already exists in the orders collection
+    final querySnapshot = await orderCollection.where('pid', isEqualTo: productData['pid']).get();
 
-        return false;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
+    if (querySnapshot.docs.isNotEmpty) {
+      // Item already exists in orders collection
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Loction permission are permintly denied")));
-
-      return false;
+        SnackBar(
+          content: Text('You have already purchased this item.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      // Set the _showProductDetails state to false
+      setState(() {
+        _showProductDetails = false;
+      });
+    } else {
+      // Item doesn't exist, add it to the collection
+      await orderCollection.add({...productData, 'totalAmount': totalAmount}).then((value) {
+        print('Product added to orders successfully!');
+        setState(() {
+          _totalAmount = totalAmount;
+          _showProductDetails = true;
+        });
+      }).catchError((error) => print('Error adding product to orders: $error'));
     }
-    return true;
-  }
-
-  Future<void> getCurrentLocation() async {
-    final HasPermission = await checkPermissionPhone();
-    if (!HasPermission) return;
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((Position position) {
-      setState(() {
-        _position = position;
-        _getAddressFromLatLng(_position!);
-      });
-    }).catchError((e) {});
-  }
-
-  Future<void> _getAddressFromLatLng(Position position) async {
-    await placemarkFromCoordinates(_position!.latitude, _position!.longitude)
-        .then((List<Placemark> placemarks) {
-      Placemark place = placemarks[0];
-      setState(() {
-        address =
-            '${place.street}, ${place.subLocality},'
-                ' ${place.postalCode}, '
-                '${place.administrativeArea},${place.name}';
-        pincode=place.postalCode;
-        houseno=place.name;
-        roadname=place.street;
-        city=place.subLocality;
-        state= place.administrativeArea;
-        housenoController.text=houseno.toString();
-        roadnameController.text=roadname.toString();
-        cityController.text=city.toString();
-        stateController.text=state.toString();
-        pinCodeController.text=pincode.toString();
-      });
-    }).catchError((e) {
-      debugPrint(e);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Address"),
-      ),
-      body: Column(
-        children: [
-          Text(
-            "${address ?? ''}",
-            style: TextStyle(fontSize: 20),
-          ),
-          Form(child: Column(
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              TextFormField(
-                controller: housenoController,
-                decoration:
-                InputDecoration(
-                    label: Text("House number")
+              Center(
+                child: Text(
+                  "Invoice",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
                 ),
               ),
-              TextFormField(
-                controller: roadnameController,
-                decoration:
-                InputDecoration(
-                    label: Text("LandMark")
-                ),
+              Text(
+                "Pixca",
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
               ),
-              TextFormField(
-                controller: cityController,
-                decoration:
-                InputDecoration(
-                    label: Text("Road name or area")
-                ),
+              Text(
+                'Model :  ${widget.productData['productName'] ?? ''}',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              TextFormField(
-                controller: stateController,
-                decoration:
-                InputDecoration(
-                    label: Text("State")
-                ),
+              SizedBox(height: 10),
+              Text(
+                'Brand : ${widget.productData['brand'] ?? ''}',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              TextFormField(
-                controller: pinCodeController,
-               decoration:
-                InputDecoration(
-                  label: Text("Pincode")
-                ),
+              SizedBox(height: 10),
+              Text(
+                'Price: Rs ${widget.productData['price'] ?? ''}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
+              SizedBox(height: 10),
+              Text(
+                'Sales Tax: 2.5%',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              Text('Total Amount: \$${_totalAmount.toStringAsFixed(2)}'),
             ],
-          )),
-          ElevatedButton(
-              onPressed: () {
-                getCurrentLocation();
-              },
-              child: Text("Use my location"))
-
-        ],
+          ),
+        ),
       ),
     );
   }
