@@ -11,6 +11,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pixca/controller/carousel-Controler.dart';
 import 'package:pixca/controller/googleSignInController.dart';
+import 'package:pixca/view/cartScreen.dart';
+import 'package:pixca/view/notificationscreen.dart';
 import 'package:pixca/view/phoneScreen.dart';
 import 'package:pixca/view/productBrandList.dart';
 import 'package:pixca/view/settingsScreen.dart';
@@ -31,6 +33,9 @@ class HomeSample extends StatefulWidget {
 }
 
 class _HomeSampleState extends State<HomeSample> {
+
+
+
   ImageController caroselController = Get.put(ImageController());
   GoogleController googleController = Get.put(GoogleController());
   final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -55,6 +60,19 @@ class _HomeSampleState extends State<HomeSample> {
       setState(() {});
     }
   }
+
+  // int _selectedIndex = 0;
+  //
+  // static List<Widget> _widgetOptions = <Widget>[
+  //   HomeSample(),
+  //   NotificationSample(),
+  //   CartSample(),
+  // ];
+  // void _onItemTapped(int index) {
+  //   setState(() {
+  //     _selectedIndex = index;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -165,16 +183,61 @@ class _HomeSampleState extends State<HomeSample> {
           )
         ],
       ),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   items: [
+      //     BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
+      //     BottomNavigationBarItem(
+      //         icon: Icon(Icons.notifications_active_outlined),
+      //         label: "Notification"),
+      //     BottomNavigationBarItem(
+      //         icon: Icon(CupertinoIcons.cart), label: "Cart"),
+      //   ],
+      // ),
       bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-              icon: Icon(Icons.notifications_active_outlined),
-              label: "Notification"),
+            icon: Icon(Icons.home_filled),
+            label: 'Home',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.cart), label: "Cart"),
+            icon: Icon(Icons.notifications_active_outlined),
+            label: 'Notification',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.cart),
+            label: 'Cart',
+          ),
         ],
-      ),
+        // currentIndex: _selectedIndex,
+        // selectedItemColor: Colors.amber[800],
+        onTap: (int index) {
+          // Handle navigation based on the tapped index
+          switch (index) {
+            case 0:
+            // Navigate to the Home screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomeSample()),
+              );
+              break;
+            case 1:
+            // Navigate to the Favorites screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => NotificationSample()),
+              );
+              break;
+            case 2:
+            // Navigate to the Orders screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CartSample()),
+              );
+              break;
+          }
+        },      ),
+
+
       body: ListView(
         children: [
           Row(

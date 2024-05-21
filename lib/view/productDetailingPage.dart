@@ -1,28 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pixca/view/deliveryLocationMarking.dart';
 import 'cartScreen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic> productData;
 
-  const ProductDetailScreen({Key? key, required this.productData})
-      : super(key: key);
+  const ProductDetailScreen({Key? key, required this.productData}) : super(key: key);
 
   @override
   _ProductDetailScreenState createState() => _ProductDetailScreenState();
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  // double _totalAmount = 0.0;
-  bool _isFavorite = false; // Initialize _isFavorite to false
+  bool _isFavorite = false;
+  String? _selectedColor; // Variable to store the selected color
+  String? _selectedROM; // Variable to store the selected ROM
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      fetchFavoriteStatus();
-    });
-    // Fetch favorite status from Firestore
+    fetchFavoriteStatus();
   }
 
   // Function to fetch favorite status from Firestore
@@ -40,7 +39,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       }
     } catch (error) {
       print('Error fetching favorite status: $error');
-      // Handle error and set _isFavorite to false
       setState(() {
         _isFavorite = false;
       });
@@ -100,16 +98,67 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
             SizedBox(height: 10),
             Text(
-              'Price: \Rs ${widget.productData['price'] ?? ''}',
+              'Price: Rs ${widget.productData['price'] ?? ''}',
               style: TextStyle(fontSize: 18),
             ),
 
             SizedBox(height: 10),
-            Text('Color: ${widget.productData['color'] ?? ''}'),
+            Text('Color:'),
+            Wrap(
+              spacing: 5.w,
+              children: (widget.productData['color'] as List<dynamic> ?? [])
+                  .map<Widget>((color) {
+                return Material(
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      setState(() {
+                        _selectedColor = color.toString(); // Set selected color
+                      });
+                    },
+                    child: Chip(
+                      label: Text(
+                        color.toString(),
+                      ),
+                      backgroundColor: _selectedColor == color.toString()
+                          ? Colors.green.shade200
+                          : null,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
             SizedBox(height: 10),
             Text('RAM: ${widget.productData['ram'] ?? ''}'),
             SizedBox(height: 10),
-            Text('ROM: ${widget.productData['ROM'] ?? ''}'),
+            Text('ROM: '),
+            Wrap(
+              spacing: 5.w,
+              children: (widget.productData['ROM'] as List<dynamic> ?? [])
+                  .map<Widget>((rom) {
+                return Material(
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      setState(() {
+                        _selectedROM = rom.toString(); // Set selected ROM
+                      });
+                    },
+                    child: Chip(
+                      label: Text(
+                        rom.toString(),
+                      ),
+                      backgroundColor: _selectedROM == rom.toString()
+                          ? Colors.green.shade200
+                          : null,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
             SizedBox(height: 10),
             Text(
               'Description: ${widget.productData['description'] ?? ''}',
@@ -130,10 +179,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       backgroundColor: Colors.green.shade700,
                     ),
                     onPressed: () async {
-                      setState(() {});
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DeliveryLocationMarkingPage(),
+                        ),
+                      );
                     },
                     child: Text(
-                      'Book Now',
+                      'Buy Now',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -145,7 +199,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade700),
                     onPressed: () async {
-                      addToCart();
+                      if (_selectedColor == null || _selectedROM == null) {
+                        // Show alert if no color or ROM is selected
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Mandatory Selection'),
+                            content: Text(
+                                'Please select both a color and ROM before adding to the cart.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        addToCart();
+                      }
                     },
                     child: Text(
                       'Add to Cart',
@@ -179,6 +253,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       QuerySnapshot cartSnapshot = await FirebaseFirestore.instance
           .collection('cart')
           .where('pid', isEqualTo: widget.productData['pid'])
+          .where('color', isEqualTo: _selectedColor)
+          .where('rom', isEqualTo: _selectedROM)
           .get();
 
       if (cartSnapshot.docs.isNotEmpty) {
@@ -201,7 +277,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           'gst': gstAmount,
           'shippingCharge': 20,
           'quantity': 1,
-          // Set initial quantity to 1
+          'color': _selectedColor, // Save the selected color
+          'rom': _selectedROM, // Save the selected ROM
           // Add other product details as needed
         });
       }
