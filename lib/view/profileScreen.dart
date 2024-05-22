@@ -10,7 +10,7 @@ import '../controller/getUserDataController.dart';
 import '../controller/googleSignInController.dart';
 
 class ProfileSample extends StatefulWidget {
-  const ProfileSample({super.key});
+  const ProfileSample({Key? key});
 
   @override
   State<ProfileSample> createState() => _ProfileSampleState();
@@ -18,8 +18,8 @@ class ProfileSample extends StatefulWidget {
 
 class _ProfileSampleState extends State<ProfileSample> {
   final GoogleController googleController = GoogleController();
-  final GetUserDataController _getUserDadtaController =
-      Get.put(GetUserDataController());
+  final GetUserDataController _getUserDataController =
+  Get.put(GetUserDataController());
 
   late final User user;
   List<QueryDocumentSnapshot<Object?>> userData = [];
@@ -29,9 +29,7 @@ class _ProfileSampleState extends State<ProfileSample> {
   bool _isEditingPhone = false;
   bool _isEditingImage = false;
 
-
-  var phonergr = RegExp(r"^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$");
-
+  var contactRegExp = RegExp(r"^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$");
 
   @override
   void initState() {
@@ -42,7 +40,7 @@ class _ProfileSampleState extends State<ProfileSample> {
   }
 
   Future<void> _getUserData() async {
-    userData = await _getUserDadtaController.getUserData(user.uid);
+    userData = await _getUserDataController.getUserData(user.uid);
     if (userData.isNotEmpty) {
       phoneController.text = userData[0]['phone'] ?? '';
       _imageUrl = userData[0]['userImg'];
@@ -60,7 +58,7 @@ class _ProfileSampleState extends State<ProfileSample> {
       } else if (_imageFile != null) {
         var imageName = "Image_${DateTime.now().millisecondsSinceEpoch}";
         var storageRef =
-            FirebaseStorage.instance.ref().child('user_images/$imageName.jpg');
+        FirebaseStorage.instance.ref().child('user_images/$imageName.jpg');
         var uploadTask = storageRef.putFile(_imageFile!);
         downloadUrl = await (await uploadTask).ref.getDownloadURL();
       }
@@ -75,7 +73,7 @@ class _ProfileSampleState extends State<ProfileSample> {
 
   Future<void> _pickImage() async {
     final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
@@ -85,13 +83,19 @@ class _ProfileSampleState extends State<ProfileSample> {
   }
 
   Future<void> _updatePhone() async {
-    await _updateUserData();
-    Get.snackbar('Success', 'Phone number updated',
-        snackPosition: SnackPosition.BOTTOM);
-    setState(() {
-      _isEditingPhone = false;
-    });
+    if (contactRegExp.hasMatch(phoneController.text)) {
+      await _updateUserData();
+      Get.snackbar('Success', 'Phone number updated',
+          snackPosition: SnackPosition.BOTTOM);
+      setState(() {
+        _isEditingPhone = false;
+      });
+    } else {
+      Get.snackbar('Error', 'Please enter a valid phone number',
+          snackPosition: SnackPosition.BOTTOM);
+    }
   }
+
 
   Future<void> _updateProfile() async {
     await _updateUserData();
@@ -124,28 +128,20 @@ class _ProfileSampleState extends State<ProfileSample> {
                   backgroundImage: _imageFile != null
                       ? FileImage(_imageFile!)
                       : NetworkImage(
-                          _imageUrl ?? 'https://via.placeholder.com/120',
-                        ) as ImageProvider,
+                    _imageUrl ?? 'https://via.placeholder.com/120',
+                  ) as ImageProvider<Object>,
                   child: Align(
-                      alignment: Alignment.bottomRight,
-                      child: _isEditingImage
-                          ? IconButton(
-                              onPressed: _updateProfile, icon: Icon(Icons.save))
-                          : Icon(
-                              Icons.edit,
-                              color: Colors.black,
-                            )
-
-                      // ElevatedButton.icon(
-                      //   onPressed: _updateProfile,
-                      //   icon: Icon(Icons.save),
-                      //   label: Text('Save'),
-                      // )
-                      //     : Icon(
-                      //   Icons.edit,
-                      //   color: Colors.white,
-                      // ),
-                      ),
+                    alignment: Alignment.bottomRight,
+                    child: _isEditingImage
+                        ? IconButton(
+                      onPressed: _updateProfile,
+                      icon: Icon(Icons.save),
+                    )
+                        : Icon(
+                      Icons.edit,
+                      color: Colors.black,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -182,31 +178,31 @@ class _ProfileSampleState extends State<ProfileSample> {
                   decoration: InputDecoration(labelText: 'Phone'),
                   readOnly: !_isEditingPhone,
                   keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "Please enter phone number";
+                    } else if (!contactRegExp.hasMatch(value)) {
+                      return "Please enter a valid phone number";
+                    }
+                    return null;
+                  },
                 ),
                 shape: OutlineInputBorder(),
                 leading: Icon(Icons.phone),
                 trailing: _isEditingPhone
                     ? ElevatedButton.icon(
-                        onPressed: _updatePhone,
-                        icon: Icon(Icons.save, color: Colors.black),
-                        label: Text('Save'),
-                      )
+                  onPressed: _updatePhone,
+                  icon: Icon(Icons.save, color: Colors.black),
+                  label: Text('Save'),
+                )
                     : IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () {
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return "Please enter phone number";
-                            } else if (!phonergr.hasMatch(value)) {
-                              return "please enter a valid phone number";
-                            }
-                            return null;
-                          };
-                          setState(() {
-                            _isEditingPhone = true;
-                          });
-                        },
-                      ),
+                  icon: Icon(Icons.edit),
+                  onPressed: () {
+                    setState(() {
+                      _isEditingPhone = true;
+                    });
+                  },
+                ),
               ),
             ),
           ],
