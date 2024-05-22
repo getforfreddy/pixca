@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:pixca/view/googleMapSample.dart';
 import 'package:pixca/view/placeOrderAndOrderSummery.dart';
 
 import '../controller/getUserDataController.dart';
@@ -222,6 +223,21 @@ class _DeliveryLocationMarkingPageState
                 saveAddress();
               },
               child: Text('Save Address'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 155, left: 155),
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => GoogleMapSample(),
+                      ));
+                });
+              },
+              child: Text('google map'),
             ),
           ),
         ],

@@ -70,14 +70,14 @@ class _LoginSampleState extends State<LoginSample> {
                                       controller: userNameController,
                                       validator: (value) {
                                         if (value!.isEmpty) {
-                                          return "Please enter username";
+                                          return "Please enter email";
                                         }
                                         return null;
                                       },
                                       style: TextStyle(fontSize: 20),
                                       decoration: InputDecoration(
-                                        label: Text("Username"),
-                                        hintText: "Enter your Username",
+                                        label: Text("Email"),
+                                        hintText: "Enter your email",
                                         border: OutlineInputBorder(),
                                       ),
                                     ),

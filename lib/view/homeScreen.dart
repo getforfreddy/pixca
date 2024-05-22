@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,6 +12,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pixca/controller/carousel-Controler.dart';
 import 'package:pixca/controller/googleSignInController.dart';
+import 'package:pixca/view/cameraSample.dart';
 import 'package:pixca/view/cartScreen.dart';
 import 'package:pixca/view/notificationscreen.dart';
 import 'package:pixca/view/phoneScreen.dart';
@@ -33,7 +35,6 @@ class HomeSample extends StatefulWidget {
 }
 
 class _HomeSampleState extends State<HomeSample> {
-
 
 
   ImageController caroselController = Get.put(ImageController());
@@ -180,7 +181,18 @@ class _HomeSampleState extends State<HomeSample> {
           Padding(
             padding: const EdgeInsets.only(right: 25),
             child: Icon(CupertinoIcons.search),
-          )
+          ),
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CameraSample(),
+                      ));
+                });
+              },
+              icon: Icon(CupertinoIcons.camera))
         ],
       ),
       // bottomNavigationBar: BottomNavigationBar(
@@ -214,29 +226,29 @@ class _HomeSampleState extends State<HomeSample> {
           // Handle navigation based on the tapped index
           switch (index) {
             case 0:
-            // Navigate to the Home screen
+              // Navigate to the Home screen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => HomeSample()),
               );
               break;
             case 1:
-            // Navigate to the Favorites screen
+              // Navigate to the Favorites screen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => NotificationSample()),
               );
               break;
             case 2:
-            // Navigate to the Orders screen
+              // Navigate to the Orders screen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => CartSample()),
               );
               break;
           }
-        },      ),
-
+        },
+      ),
 
       body: ListView(
         children: [
@@ -310,7 +322,7 @@ class _HomeSampleState extends State<HomeSample> {
                     ),
                   );
                 },
-                options: CarouselOptions(height:300.0, autoPlay: true),
+                options: CarouselOptions(height: 300.0, autoPlay: true),
               );
             }
           }),
@@ -333,15 +345,16 @@ class _HomeSampleState extends State<HomeSample> {
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
-                          String selectedBrandName = caroselController.brandNames[index]; // Accessing brandNames RxList
+                          String selectedBrandName = caroselController
+                              .brandNames[index]; // Accessing brandNames RxList
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ProductListPage(brand: selectedBrandName),
+                              builder: (context) =>
+                                  ProductListPage(brand: selectedBrandName),
                             ),
                           );
                         },
-
                         child: ClipOval(
                           child: CircleAvatar(
                             radius: 100,
@@ -467,6 +480,7 @@ class _HomeSampleState extends State<HomeSample> {
     );
   }
 }
+
 class DetailsPage extends StatelessWidget {
   final String uid;
 
@@ -484,4 +498,3 @@ class DetailsPage extends StatelessWidget {
     );
   }
 }
-

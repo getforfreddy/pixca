@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pixca/view/myAddressScreen.dart';
 import 'package:pixca/view/paymentScreen.dart';
 import 'package:pixca/view/profileScreen.dart';
 import 'about.dart';
@@ -91,11 +92,11 @@ class _SettingsSampleState extends State<SettingsSample> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PaymentPage(productData: Map(), totalAmount: double.minPositive),
+                        builder: (context) => MyAddressSample(),
                       ));
                 },
                 leading: Icon(Icons.location_on_outlined),
-                title: Text("Address"),
+                title: Text("Saved address"),
                 trailing: Icon(Icons.arrow_forward_ios_sharp),
               ),
             ),

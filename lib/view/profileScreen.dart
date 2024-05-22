@@ -29,6 +29,10 @@ class _ProfileSampleState extends State<ProfileSample> {
   bool _isEditingPhone = false;
   bool _isEditingImage = false;
 
+
+  var phonergr = RegExp(r"^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$");
+
+
   @override
   void initState() {
     super.initState();
@@ -177,6 +181,7 @@ class _ProfileSampleState extends State<ProfileSample> {
                   controller: phoneController,
                   decoration: InputDecoration(labelText: 'Phone'),
                   readOnly: !_isEditingPhone,
+                  keyboardType: TextInputType.phone,
                 ),
                 shape: OutlineInputBorder(),
                 leading: Icon(Icons.phone),
@@ -189,6 +194,14 @@ class _ProfileSampleState extends State<ProfileSample> {
                     : IconButton(
                         icon: Icon(Icons.edit),
                         onPressed: () {
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return "Please enter phone number";
+                            } else if (!phonergr.hasMatch(value)) {
+                              return "please enter a valid phone number";
+                            }
+                            return null;
+                          };
                           setState(() {
                             _isEditingPhone = true;
                           });
