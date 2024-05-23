@@ -12,6 +12,10 @@ class _OrderScreenState extends State<OrderScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Orders"),
+
+      ),
+      body: Center(
+        child: Text("No orders"),
       ),
     );
   }
