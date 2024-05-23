@@ -75,6 +75,11 @@ class _CartSampleState extends State<CartSample> {
     });
   }
 
+  Future<void> deleteCartItem(String cartItemId) async {
+    await FirebaseFirestore.instance.collection('cart').doc(cartItemId).delete();
+    calculateGrandTotal();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -110,7 +115,8 @@ class _CartSampleState extends State<CartSample> {
                   return ListView.builder(
                     itemCount: cartItems.length,
                     itemBuilder: (context, index) {
-                      final cartData = cartItems[index].data() as Map<String, dynamic>;
+                      final cartItem = cartItems[index];
+                      final cartData = cartItem.data() as Map<String, dynamic>;
                       final productId = cartData['pid'] ?? '';
 
                       return FutureBuilder<Map<String, dynamic>>(
@@ -201,6 +207,12 @@ class _CartSampleState extends State<CartSample> {
                                               Text('$totalPrice', style: TextStyle(fontSize: 20)),
                                             ],
                                           ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.delete),
+                                          onPressed: () {
+                                            deleteCartItem(cartItem.id);
+                                          },
                                         ),
                                       ],
                                     ),
