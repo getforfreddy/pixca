@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pixca/view/deliveryLocationMarking.dart';
 import 'package:pixca/view/productDetailingPage.dart';
 
@@ -16,6 +17,16 @@ class CartSample extends StatefulWidget {
 
 class _CartSampleState extends State<CartSample> {
   double grandTotal = 0.0;
+  String? _userId; // Variable to store the user ID
+
+  Future<void> fetchUserId() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        _userId = user.uid;
+      });
+    }
+  }
 
   Future<Map<String, dynamic>> fetchProductDetails(String pid) async {
     final productSnapshot = await FirebaseFirestore.instance.collection('Products').doc(pid).get();
@@ -50,7 +61,9 @@ class _CartSampleState extends State<CartSample> {
   }
 
   Future<void> calculateGrandTotal() async {
-    final cartSnapshot = await FirebaseFirestore.instance.collection('cart').get();
+    if (_userId == null) return;
+
+    final cartSnapshot = await FirebaseFirestore.instance.collection('cart').where('userId', isEqualTo: _userId).get();
     double total = 0.0;
     for (var doc in cartSnapshot.docs) {
       final cartData = doc.data() as Map<String, dynamic>;
@@ -65,7 +78,9 @@ class _CartSampleState extends State<CartSample> {
   @override
   void initState() {
     super.initState();
-    calculateGrandTotal();
+    fetchUserId().then((_) {
+      calculateGrandTotal();
+    });
   }
 
   @override
@@ -74,11 +89,13 @@ class _CartSampleState extends State<CartSample> {
       appBar: AppBar(
         title: Text("Cart"),
       ),
-      body: Column(
+      body: _userId == null
+          ? Center(child: CircularProgressIndicator())
+          : Column(
         children: [
           Expanded(
             child: FutureBuilder<QuerySnapshot>(
-              future: FirebaseFirestore.instance.collection('cart').get(),
+              future: FirebaseFirestore.instance.collection('cart').where('userId', isEqualTo: _userId).get(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
@@ -124,7 +141,9 @@ class _CartSampleState extends State<CartSample> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ProductDetailScreen(productData: productId,),
+                                    builder: (context) => ProductDetailScreen(
+                                      productData: productData,
+                                    ),
                                   ),
                                 );
                               },
