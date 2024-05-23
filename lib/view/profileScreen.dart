@@ -96,7 +96,6 @@ class _ProfileSampleState extends State<ProfileSample> {
     }
   }
 
-
   Future<void> _updateProfile() async {
     await _updateUserData();
     Get.snackbar('Success', 'Profile updated',
@@ -205,6 +204,22 @@ class _ProfileSampleState extends State<ProfileSample> {
                 ),
               ),
             ),
+            SizedBox(height: 20.h),
+            // New Button
+            // Padding(
+            //   padding: const EdgeInsets.all(18.0),
+            //   child: ElevatedButton(
+            //     onPressed: () {
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder: (context) => PhoneOTPVerification(),
+            //         ),
+            //       );
+            //     },
+            //     child: Text('Go to Phone OTP Verification'),
+            //   ),
+            // ),
           ],
         ),
       ),

@@ -4,12 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:lottie/lottie.dart';
 import 'package:pixca/controller/carousel-Controler.dart';
 import 'package:pixca/controller/googleSignInController.dart';
 import 'package:pixca/view/cameraSample.dart';
@@ -22,10 +19,11 @@ import 'package:pixca/view/upload_file.dart';
 import 'package:pixca/view/watchesScreenSample.dart';
 import 'package:pixca/view/wishList.dart';
 import 'package:shimmer/shimmer.dart';
-
 import '../controller/getUserDataController.dart';
 import 'accessoriesScreen.dart';
+import 'package:lottie/lottie.dart';
 import 'orderScreen.dart';
+
 
 class HomeSample extends StatefulWidget {
   const HomeSample({super.key});
@@ -35,15 +33,11 @@ class HomeSample extends StatefulWidget {
 }
 
 class _HomeSampleState extends State<HomeSample> {
-
-
-  ImageController caroselController = Get.put(ImageController());
+  ImageController carouselController = Get.put(ImageController());
   GoogleController googleController = Get.put(GoogleController());
   final GoogleSignIn googleSignIn = GoogleSignIn();
-  final GetUserDataController _getUserDadtaController =
-      Get.put(GetUserDataController());
-
-  // PhoneNameController gridPhoneNameController=Get.put(GoogleController());
+  final GetUserDataController _getUserDataController =
+  Get.put(GetUserDataController());
 
   late final User user;
   late List<QueryDocumentSnapshot<Object?>> userData = [];
@@ -56,24 +50,11 @@ class _HomeSampleState extends State<HomeSample> {
   }
 
   Future<void> _getUserData() async {
-    userData = await _getUserDadtaController.getUserData(user.uid);
+    userData = await _getUserDataController.getUserData(user.uid);
     if (mounted) {
       setState(() {});
     }
   }
-
-  // int _selectedIndex = 0;
-  //
-  // static List<Widget> _widgetOptions = <Widget>[
-  //   HomeSample(),
-  //   NotificationSample(),
-  //   CartSample(),
-  // ];
-  // void _onItemTapped(int index) {
-  //   setState(() {
-  //     _selectedIndex = index;
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -87,8 +68,8 @@ class _HomeSampleState extends State<HomeSample> {
                 radius: 70.r,
                 backgroundImage: NetworkImage(
                   userData.isNotEmpty &&
-                          userData[0]['userImg'] != null &&
-                          userData[0]['userImg'].isNotEmpty
+                      userData[0]['userImg'] != null &&
+                      userData[0]['userImg'].isNotEmpty
                       ? userData[0]['userImg']
                       : 'https://via.placeholder.com/120',
                 ),
@@ -103,13 +84,10 @@ class _HomeSampleState extends State<HomeSample> {
               leading: Icon(CupertinoIcons.cube_box),
               title: Text("Order"),
               onTap: () {
-                setState(() {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => OrderScreen(),
-                      ));
-                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OrderScreen()),
+                );
               },
               trailing: Icon(Icons.arrow_forward_ios_sharp),
             ),
@@ -117,13 +95,10 @@ class _HomeSampleState extends State<HomeSample> {
               leading: Icon(CupertinoIcons.heart),
               title: Text("Wishlist"),
               onTap: () {
-                setState(() {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => WishList(),
-                      ));
-                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => WishList()),
+                );
               },
               trailing: Icon(Icons.arrow_forward_ios_sharp),
             ),
@@ -131,13 +106,10 @@ class _HomeSampleState extends State<HomeSample> {
               leading: Icon(Icons.settings),
               title: Text("Settings"),
               onTap: () {
-                setState(() {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SettingsSample(),
-                      ));
-                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsSample()),
+                );
               },
               trailing: Icon(Icons.arrow_forward_ios_sharp),
             ),
@@ -145,13 +117,10 @@ class _HomeSampleState extends State<HomeSample> {
               leading: Icon(Icons.photo_camera_back),
               title: Text("Upload image"),
               onTap: () {
-                setState(() {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UploadImageFile(),
-                      ));
-                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UploadImageFile()),
+                );
               },
               trailing: Icon(Icons.arrow_forward_ios_sharp),
             ),
@@ -184,27 +153,14 @@ class _HomeSampleState extends State<HomeSample> {
           ),
           IconButton(
               onPressed: () {
-                setState(() {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CameraSample(),
-                      ));
-                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CameraSample()),
+                );
               },
               icon: Icon(CupertinoIcons.camera))
         ],
       ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   items: [
-      //     BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-      //     BottomNavigationBarItem(
-      //         icon: Icon(Icons.notifications_active_outlined),
-      //         label: "Notification"),
-      //     BottomNavigationBarItem(
-      //         icon: Icon(CupertinoIcons.cart), label: "Cart"),
-      //   ],
-      // ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -220,27 +176,21 @@ class _HomeSampleState extends State<HomeSample> {
             label: 'Cart',
           ),
         ],
-        // currentIndex: _selectedIndex,
-        // selectedItemColor: Colors.amber[800],
         onTap: (int index) {
-          // Handle navigation based on the tapped index
           switch (index) {
             case 0:
-              // Navigate to the Home screen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => HomeSample()),
               );
               break;
             case 1:
-              // Navigate to the Favorites screen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => NotificationSample()),
               );
               break;
             case 2:
-              // Navigate to the Orders screen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => CartSample()),
@@ -249,48 +199,38 @@ class _HomeSampleState extends State<HomeSample> {
           }
         },
       ),
-
       body: ListView(
         children: [
           Row(
             children: [
               TextButton(
                   onPressed: () {
-                    setState(() {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PhoneSalesSample(),
-                          ));
-                    });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => PhoneSalesSample()),
+                    );
                   },
                   child: Text("Phones")),
               TextButton(
                   onPressed: () {
-                    setState(() {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => WatchesSample(),
-                          ));
-                    });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => WatchesSample()),
+                    );
                   },
                   child: Text("Watches")),
               TextButton(
                   onPressed: () {
-                    setState(() {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AccessoriesSample(),
-                          ));
-                    });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AccessoriesSample()),
+                    );
                   },
                   child: Text("Accessories")),
             ],
           ),
           Obx(() {
-            if (caroselController.carouselImages.isEmpty) {
+            if (carouselController.carouselImages.isEmpty) {
               return Center(
                 heightFactor: 500.h,
                 widthFactor: 500.w,
@@ -298,13 +238,13 @@ class _HomeSampleState extends State<HomeSample> {
                     width: 100,
                     height: 100,
                     child:
-                        Lottie.asset('assect/animations/loadingLottie.json')),
+                    Lottie.asset('assect/animations/loadingLottie.json')),
               );
             } else {
               return CarouselSlider.builder(
-                itemCount: caroselController.carouselImages.length,
+                itemCount: carouselController.carouselImages.length,
                 itemBuilder: (context, index, realIndex) {
-                  final uid = caroselController.carouselImages[index];
+                  final uid = carouselController.carouselImages[index];
 
                   return InkWell(
                     onTap: () {
@@ -318,7 +258,7 @@ class _HomeSampleState extends State<HomeSample> {
                     child: Padding(
                       padding: EdgeInsets.all(10),
                       child: Image.network(
-                          caroselController.carouselImages[index]),
+                          carouselController.carouselImages[index]),
                     ),
                   );
                 },
@@ -327,7 +267,7 @@ class _HomeSampleState extends State<HomeSample> {
             }
           }),
           Obx(() {
-            if (caroselController.brandImages.isEmpty) {
+            if (carouselController.brandImages.isEmpty) {
               return Shimmer.fromColors(
                 child: CircularProgressIndicator(),
                 baseColor: Colors.grey,
@@ -341,11 +281,11 @@ class _HomeSampleState extends State<HomeSample> {
                   color: Colors.white,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: caroselController.brandImages.length,
+                    itemCount: carouselController.brandImages.length,
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
-                          String selectedBrandName = caroselController
+                          String selectedBrandName = carouselController
                               .brandNames[index]; // Accessing brandNames RxList
                           Navigator.push(
                             context,
@@ -359,7 +299,7 @@ class _HomeSampleState extends State<HomeSample> {
                           child: CircleAvatar(
                             radius: 100,
                             backgroundImage: NetworkImage(
-                              caroselController.brandImages[index],
+                              carouselController.brandImages[index],
                             ),
                             backgroundColor: Colors.transparent,
                           ),
@@ -379,8 +319,8 @@ class _HomeSampleState extends State<HomeSample> {
             ),
           ),
           Obx(
-            () {
-              if (caroselController.newLaunchedGrid.isEmpty) {
+                () {
+              if (carouselController.newLaunchedGrid.isEmpty) {
                 return Shimmer.fromColors(
                     child: Text("Loading"),
                     baseColor: Colors.grey,
@@ -388,23 +328,30 @@ class _HomeSampleState extends State<HomeSample> {
               } else {
                 return SizedBox(
                   height: 505,
-                  // Fixed height for the GridView
                   child: GridView.builder(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, // Number of columns in the grid
+                      crossAxisCount: 2,
                     ),
-                    itemCount: 4, // Number of items in the grid
+                    itemCount: 4,
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
-                          print("GridView");
+                          String selectedBrandName = carouselController
+                              .brandNames[index]; // Accessing brandNames RxList
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ProductListPage(brand: selectedBrandName),
+                            ),
+                          );
                         },
                         child: Card(
                           child: Column(
                             children: [
                               ClipRect(
                                 child: Image.network(
-                                  caroselController.newLaunchedGrid[index],
+                                  carouselController.newLaunchedGrid[index],
                                   height: 200,
                                 ),
                               ),
@@ -412,7 +359,7 @@ class _HomeSampleState extends State<HomeSample> {
                                 height: 15,
                               ),
                               Text(
-                                caroselController.gridPhoneName[index],
+                                carouselController.gridPhoneName[index],
                                 style: TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.w500),
                               ),
@@ -468,11 +415,11 @@ class _HomeSampleState extends State<HomeSample> {
               color: Colors.grey[300],
               child: Center(
                   child: Text(
-                "End",
-                style: TextStyle(
-                  fontSize: 20,
-                ),
-              )),
+                    "End",
+                    style: TextStyle(
+                      fontSize: 20,
+                    ),
+                  )),
             ),
           )
         ],

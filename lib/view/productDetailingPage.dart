@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pixca/view/deliveryLocationMarking.dart';
 import 'cartScreen.dart';
 
@@ -17,11 +18,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool _isFavorite = false;
   String? _selectedColor; // Variable to store the selected color
   String? _selectedROM; // Variable to store the selected ROM
+  String? _userId; // Variable to store the user ID
 
   @override
   void initState() {
     super.initState();
     fetchFavoriteStatus();
+    fetchUserId();
   }
 
   // Function to fetch favorite status from Firestore
@@ -41,6 +44,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       print('Error fetching favorite status: $error');
       setState(() {
         _isFavorite = false;
+      });
+    }
+  }
+
+  // Function to fetch the current user ID
+  Future<void> fetchUserId() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        _userId = user.uid;
       });
     }
   }
@@ -238,6 +251,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   // Function to add the product to the cart
   Future<void> addToCart() async {
     try {
+      if (_userId == null) {
+        // Handle the case where the user ID is not available
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('User not logged in'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
       String priceString = widget.productData['price']
           .toString()
           .trim()
@@ -253,6 +277,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       QuerySnapshot cartSnapshot = await FirebaseFirestore.instance
           .collection('cart')
           .where('pid', isEqualTo: widget.productData['pid'])
+          .where('userId', isEqualTo: _userId)
           .where('color', isEqualTo: _selectedColor)
           .where('rom', isEqualTo: _selectedROM)
           .get();
@@ -268,6 +293,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       } else {
         // Product doesn't exist in the cart, add it
         await FirebaseFirestore.instance.collection('cart').add({
+          'userId': _userId,
           'pid': widget.productData['pid'],
           // Add product ID
           'productName': widget.productData['productName'],

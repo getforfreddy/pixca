@@ -24,7 +24,7 @@ class _DeliveryLocationMarkingPageState
     extends State<DeliveryLocationMarkingPage> {
   final GoogleController googleController = GoogleController();
   final GetUserDataController _getUserDadtaController =
-      Get.put(GetUserDataController());
+  Get.put(GetUserDataController());
   String? address, pincode, state, houseno, city, roadname, customerName;
   Position? _position;
 
@@ -137,84 +137,84 @@ class _DeliveryLocationMarkingPageState
 
           Form(
               child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                      label: Text("Full Name"), border: OutlineInputBorder()),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: phoneController,
-                  decoration: InputDecoration(
-                      label: Text("Phone Number"),
-                      border: OutlineInputBorder()),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: housenoController,
-                  decoration: InputDecoration(
-                      label: Text("House number"),
-                      border: OutlineInputBorder()),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: roadnameController,
-                  decoration: InputDecoration(
-                      label: Text("LandMark"), border: OutlineInputBorder()),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: cityController,
-                  decoration: InputDecoration(
-                      label: Text("Road name or area"),
-                      border: OutlineInputBorder()),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: stateController,
-                  decoration: InputDecoration(
-                      label: Text("State"), border: OutlineInputBorder()),
-                ),
-              ),
-              Row(
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(20.0),
-                    child: SizedBox(
-                      width: 150,
-                      child: TextFormField(
-                        controller: pinCodeController,
-                        decoration: InputDecoration(
-                            label: Text("Pincode"),
-                            border: OutlineInputBorder()),
-                      ),
+                    child: TextFormField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                          label: Text("Full Name"), border: OutlineInputBorder()),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          getCurrentLocation();
-                        },
-                        child: Text("Use my location")),
+                    padding: const EdgeInsets.all(20.0),
+                    child: TextFormField(
+                      controller: phoneController,
+                      decoration: InputDecoration(
+                          label: Text("Phone Number"),
+                          border: OutlineInputBorder()),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: TextFormField(
+                      controller: housenoController,
+                      decoration: InputDecoration(
+                          label: Text("House number"),
+                          border: OutlineInputBorder()),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: TextFormField(
+                      controller: roadnameController,
+                      decoration: InputDecoration(
+                          label: Text("LandMark"), border: OutlineInputBorder()),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: TextFormField(
+                      controller: cityController,
+                      decoration: InputDecoration(
+                          label: Text("Road name or area"),
+                          border: OutlineInputBorder()),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: TextFormField(
+                      controller: stateController,
+                      decoration: InputDecoration(
+                          label: Text("State"), border: OutlineInputBorder()),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: SizedBox(
+                          width: 150,
+                          child: TextFormField(
+                            controller: pinCodeController,
+                            decoration: InputDecoration(
+                                label: Text("Pincode"),
+                                border: OutlineInputBorder()),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(30.0),
+                        child: ElevatedButton(
+                            onPressed: () {
+                              getCurrentLocation();
+                            },
+                            child: Text("Use my location")),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
-          )),
+              )),
           Padding(
             padding: const EdgeInsets.only(right: 155, left: 155),
             child: ElevatedButton(
@@ -247,6 +247,18 @@ class _DeliveryLocationMarkingPageState
 
 // Function to save the address in Firestore
   Future<void> saveAddress() async {
+    // Check if the name field is empty
+    if (nameController.text.isEmpty) {
+      // Show an error message indicating that the name field is required
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please enter a name before saving the address.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return; // Exit the function early
+    }
+
     // Access Firestore instance
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -273,7 +285,7 @@ class _DeliveryLocationMarkingPageState
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => PlaceOrderAndOrderSummery()),
-        (route) => false,
+            (route) => false,
       );
     } catch (error) {
       // Show error message
@@ -287,4 +299,5 @@ class _DeliveryLocationMarkingPageState
       print('Error saving address: $error');
     }
   }
+
 }
