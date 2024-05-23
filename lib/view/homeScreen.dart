@@ -62,18 +62,7 @@ class _HomeSampleState extends State<HomeSample> {
     }
   }
 
-  // int _selectedIndex = 0;
-  //
-  // static List<Widget> _widgetOptions = <Widget>[
-  //   HomeSample(),
-  //   NotificationSample(),
-  //   CartSample(),
-  // ];
-  // void _onItemTapped(int index) {
-  //   setState(() {
-  //     _selectedIndex = index;
-  //   });
-  // }
+
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +110,7 @@ class _HomeSampleState extends State<HomeSample> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => WishList(),
+                        builder: (context) => WishlistScreen(),
                       ));
                 });
               },

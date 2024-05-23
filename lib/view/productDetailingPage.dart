@@ -23,21 +23,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
-    fetchFavoriteStatus();
-    fetchUserId();
+    fetchUserId(); // Fetch user ID first
+    fetchFavoriteStatus(); // Then fetch favorite status
   }
 
   // Function to fetch favorite status from Firestore
   Future<void> fetchFavoriteStatus() async {
     try {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
-          .collection('products')
-          .doc(widget.productData['pid'])
-          .get();
+      if (_userId != null) {
+        DocumentSnapshot snapshot = await FirebaseFirestore.instance
+            .collection('favorites')
+            .doc(_userId)
+            .collection('userFavorites')
+            .doc(widget.productData['pid'])
+            .get();
 
-      if (snapshot.exists) {
         setState(() {
-          _isFavorite = snapshot['isFavorite'] ?? false;
+          _isFavorite = snapshot.exists;
         });
       }
     } catch (error) {
@@ -55,6 +57,87 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       setState(() {
         _userId = user.uid;
       });
+    }
+  }
+
+  Future<void> addToFavorites() async {
+    try {
+      if (_userId == null) {
+        // Handle the case where the user ID is not available
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('User not logged in'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      // Add the product to favorites collection
+      await FirebaseFirestore.instance
+          .collection('favorites')
+          .doc(_userId)
+          .collection('userFavorites')
+          .doc(widget.productData['pid'])
+          .set({
+        'userId': _userId, // Save user ID
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Item added to favorites'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (error) {
+      print('Error adding item to favorites: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to add item to favorites'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+
+  // Function to remove the product from favorites
+  Future<void> removeFromFavorites() async {
+    try {
+      if (_userId == null) {
+        // Handle the case where the user ID is not available
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('User not logged in'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      // Remove the product from favorites collection
+      await FirebaseFirestore.instance
+          .collection('favorites')
+          .doc(_userId)
+          .collection('userFavorites')
+          .doc(widget.productData['pid'])
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Item removed from favorites'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (error) {
+      print('Error removing item from favorites: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to remove item from favorites'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -92,15 +175,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
                 IconButton(
                   onPressed: () async {
-                    // Toggle favorite status
+                    if (_isFavorite) {
+                      await removeFromFavorites();
+                    } else {
+                      await addToFavorites();
+                    }
                     setState(() {
-                      _isFavorite = !_isFavorite; // Use null check operator (!)
+                      _isFavorite = !_isFavorite;
                     });
-                    // Update Firestore document to mark as favorite
-                    await FirebaseFirestore.instance
-                        .collection('Products')
-                        .doc(widget.productData['pid'])
-                        .update({'isFavorite': _isFavorite});
                   },
                   icon: Icon(
                     _isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -247,8 +329,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
     );
   }
-
-  // Function to add the product to the cart
+        // Function to add the product to the cart
   Future<void> addToCart() async {
     try {
       if (_userId == null) {
