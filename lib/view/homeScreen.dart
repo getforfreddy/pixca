@@ -16,7 +16,9 @@ import 'package:pixca/view/cameraSample.dart';
 import 'package:pixca/view/cartScreen.dart';
 import 'package:pixca/view/notificationscreen.dart';
 import 'package:pixca/view/phoneScreen.dart';
+import 'package:pixca/view/product-detail-screen-new-arrival.dart';
 import 'package:pixca/view/productBrandList.dart';
+import 'package:pixca/view/productDetailingPage.dart';
 import 'package:pixca/view/settingsScreen.dart';
 import 'package:pixca/view/upload_file.dart';
 import 'package:pixca/view/watchesScreenSample.dart';
@@ -368,12 +370,13 @@ class _HomeSampleState extends State<HomeSample> {
             ),
           ),
           Obx(
-            () {
+                () {
               if (caroselController.newLaunchedGrid.isEmpty) {
                 return Shimmer.fromColors(
-                    child: Text("Loading"),
-                    baseColor: Colors.grey,
-                    highlightColor: CupertinoColors.activeBlue);
+                  child: Text("Loading"),
+                  baseColor: Colors.grey,
+                  highlightColor: CupertinoColors.activeBlue,
+                );
               } else {
                 return SizedBox(
                   height: 505,
@@ -382,11 +385,21 @@ class _HomeSampleState extends State<HomeSample> {
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2, // Number of columns in the grid
                     ),
-                    itemCount: 4, // Number of items in the grid
+                    itemCount: caroselController.newLaunchedGrid.length,
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
-                          print("GridView");
+                          // Navigate to product detail page using Navigator
+                          // You can pass necessary data to the detail page using arguments
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductDetailPage(
+                                imageURL: caroselController.newLaunchedGrid[index],
+                                productName: caroselController.gridPhoneName[index],
+                              ),
+                            ),
+                          );
                         },
                         child: Card(
                           child: Column(
@@ -397,13 +410,13 @@ class _HomeSampleState extends State<HomeSample> {
                                   height: 200,
                                 ),
                               ),
-                              SizedBox(
-                                height: 15,
-                              ),
+                              SizedBox(height: 15),
                               Text(
                                 caroselController.gridPhoneName[index],
                                 style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.w500),
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ],
                           ),
@@ -416,6 +429,7 @@ class _HomeSampleState extends State<HomeSample> {
               }
             },
           ),
+
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(

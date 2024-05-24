@@ -240,10 +240,10 @@ class _CartSampleState extends State<CartSample> {
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => DeliveryLocationMarkingPage()),
-                    );
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) => DeliveryLocationMarkingPage()),
+                    // );
                   },
                   child: Text('Proceed to Payment'),
                   style: ElevatedButton.styleFrom(

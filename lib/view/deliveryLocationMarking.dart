@@ -1,61 +1,81 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
-import 'package:pixca/view/googleMapSample.dart';
-import 'package:pixca/view/placeOrderAndOrderSummery.dart';
 
-import '../controller/getUserDataController.dart';
-import '../controller/googleSignInController.dart';
+import '../view/placeOrderAndOrderSummery.dart'; // Adjust path as necessary
 
 class DeliveryLocationMarkingPage extends StatefulWidget {
-  const DeliveryLocationMarkingPage({super.key});
+  final Map<String, dynamic> productData;
+  final String orderId;
+
+  const DeliveryLocationMarkingPage({
+    Key? key,
+    required this.productData,
+    required this.orderId,
+  }) : super(key: key);
 
   @override
-  State<DeliveryLocationMarkingPage> createState() =>
+  _DeliveryLocationMarkingPageState createState() =>
       _DeliveryLocationMarkingPageState();
 }
 
 class _DeliveryLocationMarkingPageState
     extends State<DeliveryLocationMarkingPage> {
-  final GoogleController googleController = GoogleController();
-  final GetUserDataController _getUserDadtaController =
-      Get.put(GetUserDataController());
-  String? address, pincode, state, houseno, city, roadname, customerName;
-  Position? _position;
-
   late final User user;
-  List<QueryDocumentSnapshot<Object?>> userData = [];
-  late TextEditingController phoneController;
+  TextEditingController nameController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController housenoController = TextEditingController();
+  TextEditingController roadnameController = TextEditingController();
+  TextEditingController cityController = TextEditingController();
+  TextEditingController stateController = TextEditingController();
+  TextEditingController pinCodeController = TextEditingController();
+
+  Position? _position;
 
   @override
   void initState() {
     super.initState();
     user = FirebaseAuth.instance.currentUser!;
-    phoneController = TextEditingController();
-    _getUserData();
   }
 
-  Future<void> _getUserData() async {
-    userData = await _getUserDadtaController.getUserData(user.uid);
-    if (userData.isNotEmpty) {
-      phoneController.text = userData[0]['phone'] ?? '';
-    }
-    if (mounted) {
-      setState(() {});
+  Future<void> getCurrentLocation() async {
+    // Check and request location permissions
+    bool isLocationEnabled = await checkPermissionPhone();
+    if (!isLocationEnabled) return;
+
+    // Fetch current position
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        _position = position;
+        _getAddressFromLatLng(_position!);
+      });
+    } catch (e) {
+      print('Error getting current location: $e');
     }
   }
 
-  TextEditingController pinCodeController = TextEditingController();
-  TextEditingController housenoController = TextEditingController();
-  TextEditingController cityController = TextEditingController();
-  TextEditingController roadnameController = TextEditingController();
-  TextEditingController stateController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
+  Future<void> _getAddressFromLatLng(Position position) async {
+    try {
+      List<Placemark> placemarks =
+      await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+        setState(() {
+          housenoController.text = place.name ?? '';
+          roadnameController.text = place.street ?? '';
+          cityController.text = place.subLocality ?? '';
+          stateController.text = place.administrativeArea ?? '';
+          pinCodeController.text = place.postalCode ?? '';
+        });
+      }
+    } catch (e) {
+      print('Error getting address from coordinates: $e');
+    }
+  }
 
   Future<bool> checkPermissionPhone() async {
     bool isLocationEnabled;
@@ -63,7 +83,7 @@ class _DeliveryLocationMarkingPageState
     isLocationEnabled = await Geolocator.isLocationServiceEnabled();
     if (!isLocationEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Loction is disabled, please enable your loction")));
+          content: Text("Location is disabled, please enable your location")));
       return false;
     }
     permission = await Geolocator.checkPermission();
@@ -71,55 +91,19 @@ class _DeliveryLocationMarkingPageState
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Loction is disabled")));
+            .showSnackBar(SnackBar(content: Text("Location is disabled")));
 
         return false;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Loction permission are permintly denied")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Location permissions are permanently denied")));
 
       return false;
     }
     return true;
-  }
-
-  Future<void> getCurrentLocation() async {
-    final HasPermission = await checkPermissionPhone();
-    if (!HasPermission) return;
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((Position position) {
-      setState(() {
-        _position = position;
-        _getAddressFromLatLng(_position!);
-      });
-    }).catchError((e) {});
-  }
-
-  Future<void> _getAddressFromLatLng(Position position) async {
-    await placemarkFromCoordinates(_position!.latitude, _position!.longitude)
-        .then((List<Placemark> placemarks) {
-      Placemark place = placemarks[0];
-      setState(() {
-        address = '${place.street}, ${place.subLocality},'
-            ' ${place.postalCode}, '
-            '${place.administrativeArea},${place.name}';
-        pincode = place.postalCode;
-        houseno = place.name;
-        roadname = place.street;
-        city = place.subLocality;
-        state = place.administrativeArea;
-        housenoController.text = houseno.toString();
-        roadnameController.text = roadname.toString();
-        cityController.text = city.toString();
-        stateController.text = state.toString();
-        pinCodeController.text = pincode.toString();
-      });
-    }).catchError((e) {
-      debugPrint(e);
-    });
   }
 
   @override
@@ -130,114 +114,95 @@ class _DeliveryLocationMarkingPageState
       ),
       body: ListView(
         children: [
-          // Text(
-          //   "${address ?? ''}",
-          //   style: TextStyle(fontSize: 20),
-          // ),
-
           Form(
-              child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                      label: Text("Full Name"), border: OutlineInputBorder()),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                        labelText: "Full Name",
+                        border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: phoneController,
-                  decoration: InputDecoration(
-                      label: Text("Phone Number"),
-                      border: OutlineInputBorder()),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: phoneController,
+                    decoration: InputDecoration(
+                        labelText: "Phone Number",
+                        border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: housenoController,
-                  decoration: InputDecoration(
-                      label: Text("House number"),
-                      border: OutlineInputBorder()),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: housenoController,
+                    decoration: InputDecoration(
+                        labelText: "House number",
+                        border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: roadnameController,
-                  decoration: InputDecoration(
-                      label: Text("LandMark"), border: OutlineInputBorder()),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: roadnameController,
+                    decoration: InputDecoration(
+                        labelText: "LandMark", border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: cityController,
-                  decoration: InputDecoration(
-                      label: Text("Road name or area"),
-                      border: OutlineInputBorder()),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: cityController,
+                    decoration: InputDecoration(
+                        labelText: "Road name or area",
+                        border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: stateController,
-                  decoration: InputDecoration(
-                      label: Text("State"), border: OutlineInputBorder()),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: stateController,
+                    decoration: InputDecoration(
+                        labelText: "State", border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: SizedBox(
-                      width: 150,
-                      child: TextFormField(
-                        controller: pinCodeController,
-                        decoration: InputDecoration(
-                            label: Text("Pincode"),
-                            border: OutlineInputBorder()),
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: SizedBox(
+                        width: 150,
+                        child: TextFormField(
+                          controller: pinCodeController,
+                          decoration: InputDecoration(
+                              labelText: "Pincode",
+                              border: OutlineInputBorder()),
+                        ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          getCurrentLocation();
-                        },
-                        child: Text("Use my location")),
-                  ),
-                ],
-              ),
-            ],
-          )),
-          Padding(
-            padding: const EdgeInsets.only(right: 155, left: 155),
-            child: ElevatedButton(
-              onPressed: () {
-                // Call function to save address
-                saveAddress();
-              },
-              child: Text('Save Address'),
+                    Padding(
+                      padding: const EdgeInsets.all(30.0),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            getCurrentLocation();
+                          },
+                          child: Text("Use my location")),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(right: 155, left: 155),
+            padding: const EdgeInsets.all(20),
             child: ElevatedButton(
               onPressed: () {
-                setState(() {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => GoogleMapSample(),
-                      ));
-                });
+                saveAddress();
               },
-              child: Text('google map'),
+              child: Text('Save Address'),
             ),
           ),
         ],
@@ -245,46 +210,59 @@ class _DeliveryLocationMarkingPageState
     );
   }
 
-// Function to save the address in Firestore
   Future<void> saveAddress() async {
-    // Access Firestore instance
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    // Construct address data object
+    // Prepare address data
     Map<String, dynamic> addressData = {
-      'name': nameController.text,
+      'userId': FirebaseAuth.instance.currentUser!.uid,
       'phone': phoneController.text,
-      'houseNo': housenoController.text,
-      'roadName': roadnameController.text,
-      'city': cityController.text,
-      'state': stateController.text,
-      'pincode': pinCodeController.text,
-      // Add more fields as needed
+      'houseNo': housenoController.text.isNotEmpty ? housenoController.text : null,
+      'roadName': roadnameController.text.isNotEmpty ? roadnameController.text : null,
+      'city': cityController.text.isNotEmpty ? cityController.text : null,
+      'state': stateController.text.isNotEmpty ? stateController.text : null,
+      'pincode': pinCodeController.text.isNotEmpty ? pinCodeController.text : null,
     };
 
     try {
-      // Add address data to Firestore
-      await firestore.collection('addresses').add(addressData);
-      // Show success message or navigate to another screen
+      // Verify if the order document exists before updating
+      DocumentSnapshot orderSnapshot = await firestore.collection('orders').doc(widget.orderId).get();
+      if (!orderSnapshot.exists) {
+        throw Exception('Order document not found');
+      }
+
+      // Save address data to Firestore
+      DocumentReference addressRef = await firestore.collection('addresses').add(addressData);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Address saved successfully')),
       );
-      // Navigate to another screen if needed
-      Navigator.pushAndRemoveUntil(
+
+      // Update order with address reference and change status to 'Processing'
+      await firestore.collection('orders').doc(widget.orderId).update({
+        'address': addressRef, // Store address reference in order
+        'orderStatus': 'Processing', // Update order status
+      });
+
+      // Navigate to order summary page
+      Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => PlaceOrderAndOrderSummery()),
-        (route) => false,
+        MaterialPageRoute(
+          builder: (context) => PlaceOrderAndOrderSummery(
+            orderId: widget.orderId,
+            addressData: addressData,
+          ),
+        ),
       );
     } catch (error) {
-      // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to save address'),
           duration: Duration(seconds: 3),
         ),
       );
-      // Handle error
       print('Error saving address: $error');
     }
   }
+
+
 }
