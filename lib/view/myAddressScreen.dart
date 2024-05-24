@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+import 'deliveryLocationMarking.dart';
 
 class MyAddressSample extends StatefulWidget {
   const MyAddressSample({Key? key});
@@ -51,21 +53,31 @@ class _MyAddressSampleState extends State<MyAddressSample> {
                 child: SizedBox(
                   width: 500,
                   height: 100,
-                  child: Card(
-                    child:
-                    _isLoading
-                        ? Center(child: CircularProgressIndicator())
-                        : _addressList.isEmpty
-                        ? Center(child: Text('No addresses found'))
-                        : ListView.builder(
-                      itemCount: _addressList.length,
-                      itemBuilder: (context, index) {
-                        final addressData = _addressList[index].data() as Map<String, dynamic>;
-                        return ListTile(
-                          title: Text(addressData['name']),
-                          subtitle: Text('${addressData['houseNo']}, ${addressData['roadName']}, ${addressData['city']}, ${addressData['state']}, ${addressData['pincode']}'),
-                        );
-                      },
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to DeliveryLocationMarkingPage when the card is tapped
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DeliveryLocationMarkingPage(),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      child: _isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : _addressList.isEmpty
+                          ? Center(child: Text('No addresses found'))
+                          : ListView.builder(
+                        itemCount: _addressList.length,
+                        itemBuilder: (context, index) {
+                          final addressData = _addressList[index].data() as Map<String, dynamic>;
+                          return ListTile(
+                            title: Text(addressData['name']),
+                            subtitle: Text('${addressData['houseNo']}, ${addressData['roadName']}, ${addressData['city']}, ${addressData['state']}, ${addressData['pincode']}'),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -73,7 +85,7 @@ class _MyAddressSampleState extends State<MyAddressSample> {
             ],
           ),
         ],
-      )
+      ),
     );
   }
 }

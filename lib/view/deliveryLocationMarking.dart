@@ -24,9 +24,13 @@ class _DeliveryLocationMarkingPageState
     extends State<DeliveryLocationMarkingPage> {
   final GoogleController googleController = GoogleController();
   final GetUserDataController _getUserDadtaController =
-  Get.put(GetUserDataController());
+      Get.put(GetUserDataController());
   String? address, pincode, state, houseno, city, roadname, customerName;
   Position? _position;
+
+  // late User _currentUser;
+  // bool _isLoading = true;
+  // List<DocumentSnapshot> _addressList = [];
 
   late final User user;
   List<QueryDocumentSnapshot<Object?>> userData = [];
@@ -77,8 +81,8 @@ class _DeliveryLocationMarkingPageState
     }
 
     if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Location permission are permanently denied")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Location permission are permanently denied")));
       return false;
     }
     return true;
@@ -120,6 +124,22 @@ class _DeliveryLocationMarkingPageState
     });
   }
 
+  // Future<void> _fetchAddresses() async {
+  //   _currentUser = FirebaseAuth.instance.currentUser!;
+  //   try {
+  //     final QuerySnapshot addressSnapshot = await FirebaseFirestore.instance
+  //         .collection('addresses')
+  //         .where('userId', isEqualTo: _currentUser.uid)
+  //         .get();
+  //     setState(() {
+  //       _isLoading = false;
+  //       _addressList = addressSnapshot.docs;
+  //     });
+  //   } catch (error) {
+  //     print('Error fetching addresses: $error');
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,86 +148,104 @@ class _DeliveryLocationMarkingPageState
       ),
       body: ListView(
         children: [
+          // Card(
+          //   child: _isLoading
+          //       ? Center(child: CircularProgressIndicator())
+          //       : _addressList.isEmpty
+          //           ? Center(child: Text('No addresses found'))
+          //           : ListView.builder(
+          //               itemCount: _addressList.length,
+          //               itemBuilder: (context, index) {
+          //                 final addressData = _addressList[index].data()
+          //                     as Map<String, dynamic>;
+          //                 return ListTile(
+          //                   title: Text(addressData['name']),
+          //                   subtitle: Text(
+          //                       '${addressData['houseNo']}, ${addressData['roadName']}, ${addressData['city']}, ${addressData['state']}, ${addressData['pincode']}'),
+          //                 );
+          //               },
+          //             ),
+          // ),
           Form(
               child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: TextFormField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                      label: Text("Full Name"), border: OutlineInputBorder()),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: TextFormField(
+                  controller: phoneController,
+                  decoration: InputDecoration(
+                      label: Text("Phone Number"),
+                      border: OutlineInputBorder()),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: TextFormField(
+                  controller: housenoController,
+                  decoration: InputDecoration(
+                      label: Text("House number"),
+                      border: OutlineInputBorder()),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: TextFormField(
+                  controller: roadnameController,
+                  decoration: InputDecoration(
+                      label: Text("LandMark"), border: OutlineInputBorder()),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: TextFormField(
+                  controller: cityController,
+                  decoration: InputDecoration(
+                      label: Text("Road name or area"),
+                      border: OutlineInputBorder()),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: TextFormField(
+                  controller: stateController,
+                  decoration: InputDecoration(
+                      label: Text("State"), border: OutlineInputBorder()),
+                ),
+              ),
+              Row(
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(20.0),
-                    child: TextFormField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                          label: Text("Full Name"), border: OutlineInputBorder()),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextFormField(
-                      controller: phoneController,
-                      decoration: InputDecoration(
-                          label: Text("Phone Number"),
-                          border: OutlineInputBorder()),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextFormField(
-                      controller: housenoController,
-                      decoration: InputDecoration(
-                          label: Text("House number"),
-                          border: OutlineInputBorder()),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextFormField(
-                      controller: roadnameController,
-                      decoration: InputDecoration(
-                          label: Text("LandMark"), border: OutlineInputBorder()),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextFormField(
-                      controller: cityController,
-                      decoration: InputDecoration(
-                          label: Text("Road name or area"),
-                          border: OutlineInputBorder()),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextFormField(
-                      controller: stateController,
-                      decoration: InputDecoration(
-                          label: Text("State"), border: OutlineInputBorder()),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: SizedBox(
-                          width: 150,
-                          child: TextFormField(
-                            controller: pinCodeController,
-                            decoration: InputDecoration(
-                                label: Text("Pincode"),
-                                border: OutlineInputBorder()),
-                          ),
-                        ),
+                    child: SizedBox(
+                      width: 150,
+                      child: TextFormField(
+                        controller: pinCodeController,
+                        decoration: InputDecoration(
+                            label: Text("Pincode"),
+                            border: OutlineInputBorder()),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(30.0),
-                        child: ElevatedButton(
-                            onPressed: () {
-                              getCurrentLocation();
-                            },
-                            child: Text("Use my location")),
-                      ),
-                    ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: ElevatedButton(
+                        onPressed: () {
+                          getCurrentLocation();
+                        },
+                        child: Text("Use my location")),
                   ),
                 ],
-              )),
+              ),
+            ],
+          )),
           Padding(
             padding: const EdgeInsets.only(right: 155, left: 155),
             child: ElevatedButton(
@@ -250,7 +288,8 @@ class _DeliveryLocationMarkingPageState
       // Show an error message indicating that all fields are required
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please fill out all fields before saving the address.'),
+          content:
+              Text('Please fill out all fields before saving the address.'),
           duration: Duration(seconds: 3),
         ),
       );
@@ -283,7 +322,7 @@ class _DeliveryLocationMarkingPageState
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => PlaceOrderAndOrderSummery()),
-            (route) => false,
+        (route) => false,
       );
     } catch (error) {
       // Show error message
@@ -297,5 +336,4 @@ class _DeliveryLocationMarkingPageState
       print('Error saving address: $error');
     }
   }
-
 }
