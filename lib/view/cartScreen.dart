@@ -37,26 +37,22 @@ class _CartSampleState extends State<CartSample> {
     }
   }
 
-  Future<Map<String, dynamic>> fetchProductCartDetails(String pid) async {
-    try {
-      final cartSnapshot = await FirebaseFirestore.instance.collection('cart').where('pid', isEqualTo: pid).get();
-      if (cartSnapshot.docs.isNotEmpty) {
-        final cartData = cartSnapshot.docs.first.data() as Map<String, dynamic>;
-        return {
-          'rom': cartData['rom'],
-          'productName': cartData['productName'],
-          'price': cartData['price'],
-          'quantity': cartData['quantity'],
-          'gst': cartData['gst'],
-          'shippingCharge': cartData['shippingCharge'],
-          'totalPrice': cartData['totalPrice'],
-        };
-      } else {
-        return {};
-      }
-    } catch (error) {
-      print('Error fetching product details: $error');
-      return {};
+  Future<void> updateCartQuantity(String cartItemId, int quantity) async {
+    final cartDoc = FirebaseFirestore.instance.collection('cart').doc(cartItemId);
+    final cartSnapshot = await cartDoc.get();
+    if (cartSnapshot.exists) {
+      final cartData = cartSnapshot.data() as Map<String, dynamic>;
+      final price = cartData['price'] ?? 0.0;
+      final gst = cartData['gst'] ?? 0.0;
+      final shippingCharge = cartData['shippingCharge'] ?? 0.0;
+      final totalPrice = (price * quantity) + gst + shippingCharge;
+
+      await cartDoc.update({
+        'quantity': quantity,
+        'totalPrice': totalPrice,
+      });
+
+      calculateGrandTotal();
     }
   }
 
@@ -136,7 +132,7 @@ class _CartSampleState extends State<CartSample> {
                             final List color = productData['color'] ?? [];
                             final productName = productData['productName'] ?? 'Product Name';
                             final price = cartData['price'] ?? 'N/A';
-                            final quantity = cartData['quantity'] ?? 'N/A';
+                            final quantity = cartData['quantity'] ?? 1;
                             final gst = cartData['gst'] ?? '0';
                             final shippingCharge = cartData['shippingCharge'] ?? 'N/A';
                             final totalPrice = cartData['totalPrice'] ?? 'N/A';
@@ -201,7 +197,29 @@ class _CartSampleState extends State<CartSample> {
                                           child: Column(
                                             children: [
                                               Text('$price', style: TextStyle(fontSize: 20)),
-                                              Text('$quantity', style: TextStyle(fontSize: 20)),
+                                              Row(
+                                                children: [
+                                                  IconButton(
+                                                    icon: Icon(Icons.remove),
+                                                    onPressed: quantity > 1
+                                                        ? () {
+                                                      setState(() {
+                                                        updateCartQuantity(cartItem.id, quantity - 1);
+                                                      });
+                                                    }
+                                                        : null,
+                                                  ),
+                                                  Text('$quantity', style: TextStyle(fontSize: 20)),
+                                                  IconButton(
+                                                    icon: Icon(Icons.add),
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        updateCartQuantity(cartItem.id, quantity + 1);
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
                                               Text('$gst', style: TextStyle(fontSize: 20)),
                                               Text('$shippingCharge', style: TextStyle(fontSize: 20)),
                                               Text('$totalPrice', style: TextStyle(fontSize: 20)),
@@ -245,7 +263,7 @@ class _CartSampleState extends State<CartSample> {
                       MaterialPageRoute(builder: (context) => DeliveryLocationMarkingPage()),
                     );
                   },
-                  child: Text('Proceed to Payment'),
+                  child: Text('Continue '),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                     textStyle: TextStyle(fontSize: 20),

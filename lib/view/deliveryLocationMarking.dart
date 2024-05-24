@@ -63,7 +63,7 @@ class _DeliveryLocationMarkingPageState
     isLocationEnabled = await Geolocator.isLocationServiceEnabled();
     if (!isLocationEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Loction is disabled, please enable your loction")));
+          content: Text("Location is disabled, please enable your location")));
       return false;
     }
     permission = await Geolocator.checkPermission();
@@ -71,24 +71,22 @@ class _DeliveryLocationMarkingPageState
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Loction is disabled")));
-
+            .showSnackBar(SnackBar(content: Text("Location is disabled")));
         return false;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Loction permission are permintly denied")));
-
+          SnackBar(content: Text("Location permission are permanently denied")));
       return false;
     }
     return true;
   }
 
   Future<void> getCurrentLocation() async {
-    final HasPermission = await checkPermissionPhone();
-    if (!HasPermission) return;
+    final hasPermission = await checkPermissionPhone();
+    if (!hasPermission) return;
     await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
         .then((Position position) {
       setState(() {
@@ -130,11 +128,6 @@ class _DeliveryLocationMarkingPageState
       ),
       body: ListView(
         children: [
-          // Text(
-          //   "${address ?? ''}",
-          //   style: TextStyle(fontSize: 20),
-          // ),
-
           Form(
               child: Column(
                 children: [
@@ -219,7 +212,6 @@ class _DeliveryLocationMarkingPageState
             padding: const EdgeInsets.only(right: 155, left: 155),
             child: ElevatedButton(
               onPressed: () {
-                // Call function to save address
                 saveAddress();
               },
               child: Text('Save Address'),
@@ -237,7 +229,7 @@ class _DeliveryLocationMarkingPageState
                       ));
                 });
               },
-              child: Text('google map'),
+              child: Text('Google Map'),
             ),
           ),
         ],
@@ -245,14 +237,20 @@ class _DeliveryLocationMarkingPageState
     );
   }
 
-// Function to save the address in Firestore
+  // Function to save the address in Firestore
   Future<void> saveAddress() async {
-    // Check if the name field is empty
-    if (nameController.text.isEmpty) {
-      // Show an error message indicating that the name field is required
+    // Check if any fields are empty
+    if (nameController.text.isEmpty ||
+        phoneController.text.isEmpty ||
+        housenoController.text.isEmpty ||
+        roadnameController.text.isEmpty ||
+        cityController.text.isEmpty ||
+        stateController.text.isEmpty ||
+        pinCodeController.text.isEmpty) {
+      // Show an error message indicating that all fields are required
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please enter a name before saving the address.'),
+          content: Text('Please fill out all fields before saving the address.'),
           duration: Duration(seconds: 3),
         ),
       );
@@ -264,6 +262,7 @@ class _DeliveryLocationMarkingPageState
 
     // Construct address data object
     Map<String, dynamic> addressData = {
+      'userId': FirebaseAuth.instance.currentUser!.uid, // Add userId field
       'name': nameController.text,
       'phone': phoneController.text,
       'houseNo': housenoController.text,
@@ -271,7 +270,6 @@ class _DeliveryLocationMarkingPageState
       'city': cityController.text,
       'state': stateController.text,
       'pincode': pinCodeController.text,
-      // Add more fields as needed
     };
 
     try {
