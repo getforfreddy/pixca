@@ -17,7 +17,15 @@ class CartSample extends StatefulWidget {
 
 class _CartSampleState extends State<CartSample> {
   double grandTotal = 0.0;
-  String? _userId; // Variable to store the user ID
+  String? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserId().then((_) {
+      calculateGrandTotal();
+    });
+  }
 
   Future<void> fetchUserId() async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -29,7 +37,8 @@ class _CartSampleState extends State<CartSample> {
   }
 
   Future<Map<String, dynamic>> fetchProductDetails(String pid) async {
-    final productSnapshot = await FirebaseFirestore.instance.collection('Products').doc(pid).get();
+    final productSnapshot =
+    await FirebaseFirestore.instance.collection('Products').doc(pid).get();
     if (productSnapshot.exists) {
       return productSnapshot.data() as Map<String, dynamic>;
     } else {
@@ -38,7 +47,8 @@ class _CartSampleState extends State<CartSample> {
   }
 
   Future<void> updateCartQuantity(String cartItemId, int quantity) async {
-    final cartDoc = FirebaseFirestore.instance.collection('cart').doc(cartItemId);
+    final cartDoc =
+    FirebaseFirestore.instance.collection('cart').doc(cartItemId);
     final cartSnapshot = await cartDoc.get();
     if (cartSnapshot.exists) {
       final cartData = cartSnapshot.data() as Map<String, dynamic>;
@@ -59,7 +69,10 @@ class _CartSampleState extends State<CartSample> {
   Future<void> calculateGrandTotal() async {
     if (_userId == null) return;
 
-    final cartSnapshot = await FirebaseFirestore.instance.collection('cart').where('userId', isEqualTo: _userId).get();
+    final cartSnapshot = await FirebaseFirestore.instance
+        .collection('cart')
+        .where('userId', isEqualTo: _userId)
+        .get();
     double total = 0.0;
     for (var doc in cartSnapshot.docs) {
       final cartData = doc.data() as Map<String, dynamic>;
@@ -72,16 +85,11 @@ class _CartSampleState extends State<CartSample> {
   }
 
   Future<void> deleteCartItem(String cartItemId) async {
-    await FirebaseFirestore.instance.collection('cart').doc(cartItemId).delete();
+    await FirebaseFirestore.instance
+        .collection('cart')
+        .doc(cartItemId)
+        .delete();
     calculateGrandTotal();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchUserId().then((_) {
-      calculateGrandTotal();
-    });
   }
 
   @override
@@ -95,8 +103,11 @@ class _CartSampleState extends State<CartSample> {
           : Column(
         children: [
           Expanded(
-            child: FutureBuilder<QuerySnapshot>(
-              future: FirebaseFirestore.instance.collection('cart').where('userId', isEqualTo: _userId).get(),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('cart')
+                  .where('userId', isEqualTo: _userId)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
@@ -106,36 +117,48 @@ class _CartSampleState extends State<CartSample> {
                   return Center(
                     child: Text('Error: ${snapshot.error}'),
                   );
+                } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(
+                    child: Text('Your cart is empty'),
+                  );
                 } else {
                   final cartItems = snapshot.data!.docs;
                   return ListView.builder(
                     itemCount: cartItems.length,
                     itemBuilder: (context, index) {
                       final cartItem = cartItems[index];
-                      final cartData = cartItem.data() as Map<String, dynamic>;
+                      final cartData =
+                      cartItem.data() as Map<String, dynamic>;
                       final productId = cartData['pid'] ?? '';
 
                       return FutureBuilder<Map<String, dynamic>>(
                         future: fetchProductDetails(productId),
                         builder: (context, productSnapshot) {
-                          if (productSnapshot.connectionState == ConnectionState.waiting) {
+                          if (productSnapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return Center(
                               child: CircularProgressIndicator(),
                             );
                           } else if (productSnapshot.hasError) {
                             return Center(
-                              child: Text('Error: ${productSnapshot.error}'),
+                              child:
+                              Text('Error: ${productSnapshot.error}'),
                             );
                           } else {
-                            final productData = productSnapshot.data ?? {};
+                            final productData =
+                                productSnapshot.data ?? {};
                             final imageUrl = productData['image'] ?? '';
                             final List color = productData['color'] ?? [];
-                            final productName = productData['productName'] ?? 'Product Name';
+                            final productName =
+                                productData['productName'] ??
+                                    'Product Name';
                             final price = cartData['price'] ?? 'N/A';
                             final quantity = cartData['quantity'] ?? 1;
                             final gst = cartData['gst'] ?? '0';
-                            final shippingCharge = cartData['shippingCharge'] ?? 'N/A';
-                            final totalPrice = cartData['totalPrice'] ?? 'N/A';
+                            final shippingCharge =
+                                cartData['shippingCharge'] ?? 'N/A';
+                            final totalPrice =
+                                cartData['totalPrice'] ?? 'N/A';
                             final rom = cartData['rom'] ?? 'N/A';
 
                             return GestureDetector(
@@ -143,9 +166,10 @@ class _CartSampleState extends State<CartSample> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ProductDetailScreen(
-                                      productData: productData,
-                                    ),
+                                    builder: (context) =>
+                                        ProductDetailScreen(
+                                          productData: productData,
+                                        ),
                                   ),
                                 );
                               },
@@ -163,14 +187,25 @@ class _CartSampleState extends State<CartSample> {
                                               width: 150,
                                             ),
                                           Padding(
-                                            padding: const EdgeInsets.all(8.0),
+                                            padding:
+                                            const EdgeInsets.all(8.0),
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment
+                                                  .start,
                                               children: [
-                                                Text(productName, style: TextStyle(fontSize: 25)),
-                                                if (color.isNotEmpty && index < color.length)
-                                                  Text('Color: ${color[index]}', style: TextStyle(fontSize: 15)),
-                                                Text('ROM: $rom', style: TextStyle(fontSize: 15)),
+                                                Text(productName,
+                                                    style: TextStyle(
+                                                        fontSize: 25)),
+                                                if (color.isNotEmpty &&
+                                                    index < color.length)
+                                                  Text(
+                                                      'Color: ${color[index]}',
+                                                      style: TextStyle(
+                                                          fontSize: 15)),
+                                                Text('ROM: $rom',
+                                                    style: TextStyle(
+                                                        fontSize: 15)),
                                               ],
                                             ),
                                           ),
@@ -178,51 +213,82 @@ class _CartSampleState extends State<CartSample> {
                                       ),
                                     ),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                       children: [
                                         Padding(
-                                          padding: const EdgeInsets.all(18.0),
+                                          padding:
+                                          const EdgeInsets.all(18.0),
                                           child: Column(
                                             children: [
-                                              Text('Price      :', style: TextStyle(fontSize: 20)),
-                                              Text('QTY        :', style: TextStyle(fontSize: 20)),
-                                              Text('GST        :', style: TextStyle(fontSize: 20)),
-                                              Text('Shipping :', style: TextStyle(fontSize: 20)),
-                                              Text('Total      :', style: TextStyle(fontSize: 20)),
+                                              Text('Price      :',
+                                                  style: TextStyle(
+                                                      fontSize: 20)),
+                                              Text('QTY        :',
+                                                  style: TextStyle(
+                                                      fontSize: 20)),
+                                              Text('GST        :',
+                                                  style: TextStyle(
+                                                      fontSize: 20)),
+                                              Text('Shipping :',
+                                                  style: TextStyle(
+                                                      fontSize: 20)),
+                                              Text('Total      :',
+                                                  style: TextStyle(
+                                                      fontSize: 20)),
                                             ],
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.only(right: 130),
+                                          padding: const EdgeInsets.only(
+                                              right: 130),
                                           child: Column(
                                             children: [
-                                              Text('$price', style: TextStyle(fontSize: 20)),
+                                              Text('$price',
+                                                  style: TextStyle(
+                                                      fontSize: 20)),
                                               Row(
                                                 children: [
                                                   IconButton(
-                                                    icon: Icon(Icons.remove),
-                                                    onPressed: quantity > 1
+                                                    icon: Icon(
+                                                        Icons.remove),
+                                                    onPressed: quantity >
+                                                        1
                                                         ? () {
                                                       setState(() {
-                                                        updateCartQuantity(cartItem.id, quantity - 1);
+                                                        updateCartQuantity(
+                                                            cartItem
+                                                                .id,
+                                                            quantity -
+                                                                1);
                                                       });
                                                     }
                                                         : null,
                                                   ),
-                                                  Text('$quantity', style: TextStyle(fontSize: 20)),
+                                                  Text('$quantity',
+                                                      style: TextStyle(
+                                                          fontSize: 20)),
                                                   IconButton(
                                                     icon: Icon(Icons.add),
                                                     onPressed: () {
                                                       setState(() {
-                                                        updateCartQuantity(cartItem.id, quantity + 1);
+                                                        updateCartQuantity(
+                                                            cartItem.id,
+                                                            quantity + 1);
                                                       });
                                                     },
                                                   ),
                                                 ],
                                               ),
-                                              Text('$gst', style: TextStyle(fontSize: 20)),
-                                              Text('$shippingCharge', style: TextStyle(fontSize: 20)),
-                                              Text('$totalPrice', style: TextStyle(fontSize: 20)),
+                                              Text('$gst',
+                                                  style: TextStyle(
+                                                      fontSize: 20)),
+                                              Text('$shippingCharge',
+                                                  style: TextStyle(
+                                                      fontSize: 20)),
+                                              Text('$totalPrice',
+                                                  style: TextStyle(
+                                                      fontSize: 20)),
                                             ],
                                           ),
                                         ),
@@ -253,19 +319,28 @@ class _CartSampleState extends State<CartSample> {
               children: [
                 Text(
                   'Grand Total: Rs ${grandTotal.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    // Create an order and pass the orderId and product data to the next screen
+                    final orderId = await createOrder();
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => DeliveryLocationMarkingPage()),
+                      MaterialPageRoute(
+                        builder: (context) => DeliveryLocationMarkingPage(
+                          productData: [ ], // You need to pass the appropriate productData
+                          orderId: orderId,
+                        ),
+                      ),
                     );
                   },
                   child: Text('Continue '),
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 15),
                     textStyle: TextStyle(fontSize: 20),
                   ),
                 ),
@@ -275,5 +350,11 @@ class _CartSampleState extends State<CartSample> {
         ],
       ),
     );
+  }
+
+  Future<String> createOrder() async {
+    // Implement your order creation logic here and return the orderId
+    final orderId = "your_generated_order_id"; // Replace this with your logic
+    return orderId;
   }
 }

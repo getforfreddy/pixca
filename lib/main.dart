@@ -25,7 +25,9 @@ class MyApp extends StatelessWidget {
       builder: (context, child) {
         return GetMaterialApp(
           home: SplashScreenSample(),
+          debugShowCheckedModeBanner: false,
         );
+
       },
       designSize: Size(360, 690),
       splitScreenMode: true,

@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pixca/controller/carousel-Controler.dart';
 import 'package:pixca/controller/googleSignInController.dart';
+import 'package:pixca/view/addPhonesToFireBase.dart';
 import 'package:pixca/view/cameraSample.dart';
 import 'package:pixca/view/cartScreen.dart';
 import 'package:pixca/view/notificationscreen.dart';
@@ -97,7 +98,7 @@ class _HomeSampleState extends State<HomeSample> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => WishList()),
+                  MaterialPageRoute(builder: (context) => WishlistScreen()),
                 );
               },
               trailing: Icon(Icons.arrow_forward_ios_sharp),
@@ -109,6 +110,17 @@ class _HomeSampleState extends State<HomeSample> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => SettingsSample()),
+                );
+              },
+              trailing: Icon(Icons.arrow_forward_ios_sharp),
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text("Add phones"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Addphonestofirebase()),
                 );
               },
               trailing: Icon(Icons.arrow_forward_ios_sharp),

@@ -67,7 +67,7 @@ class _SplashScreenSampleState extends State<SplashScreenSample> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 225),
                 child: Center(
-                  child: Lottie.asset('assect/animations/splashScreen.json'),
+                  child: Lottie.asset('assect/animations/logoSplash.json'),
                 ),
               )),
           TextButton(

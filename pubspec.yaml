@@ -82,8 +82,8 @@ flutter:
     - assect/animations/login.json
     - assect/animations/paymentPg.json
     - assect/animations/signUp.json
-    - assect/animations/splashScreen.json
     - assect/animations/loadingLottie.json
+    - assect/animations/logoSplash.json
     - assect/images/carousielSlider/iPhoneList.jpeg
     - assect/images/carousielSlider/Pixel-7a-5g.jpeg
     - assect/images/carousielSlider/pixel-7a-onHand.jpg

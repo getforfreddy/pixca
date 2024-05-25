@@ -1,65 +1,104 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
-import 'package:pixca/view/googleMapSample.dart';
-import 'package:pixca/view/placeOrderAndOrderSummery.dart';
 
-import '../controller/getUserDataController.dart';
-import '../controller/googleSignInController.dart';
+import '../view/placeOrderAndOrderSummery.dart'; // Adjust path as necessary
 
 class DeliveryLocationMarkingPage extends StatefulWidget {
-  const DeliveryLocationMarkingPage({super.key});
+  final Map<String, dynamic> productData;
+  final String orderId;
+
+  const DeliveryLocationMarkingPage({
+    Key? key,
+    required this.productData,
+    required this.orderId,
+  }) : super(key: key);
 
   @override
-  State<DeliveryLocationMarkingPage> createState() =>
+  _DeliveryLocationMarkingPageState createState() =>
       _DeliveryLocationMarkingPageState();
 }
 
 class _DeliveryLocationMarkingPageState
     extends State<DeliveryLocationMarkingPage> {
-  final GoogleController googleController = GoogleController();
-  final GetUserDataController _getUserDadtaController =
-      Get.put(GetUserDataController());
-  String? address, pincode, state, houseno, city, roadname, customerName;
-  Position? _position;
-
-  // late User _currentUser;
-  // bool _isLoading = true;
-  // List<DocumentSnapshot> _addressList = [];
-
   late final User user;
-  List<QueryDocumentSnapshot<Object?>> userData = [];
-  late TextEditingController phoneController;
+  TextEditingController nameController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController housenoController = TextEditingController();
+  TextEditingController roadnameController = TextEditingController();
+  TextEditingController cityController = TextEditingController();
+  TextEditingController stateController = TextEditingController();
+  TextEditingController pinCodeController = TextEditingController();
+
+  Position? _position;
 
   @override
   void initState() {
     super.initState();
     user = FirebaseAuth.instance.currentUser!;
-    phoneController = TextEditingController();
-    _getUserData();
+    fetchUserAddressData();
   }
 
-  Future<void> _getUserData() async {
-    userData = await _getUserDadtaController.getUserData(user.uid);
-    if (userData.isNotEmpty) {
-      phoneController.text = userData[0]['phone'] ?? '';
-    }
-    if (mounted) {
-      setState(() {});
+  Future<void> fetchUserAddressData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('addresses')
+          .where('userId', isEqualTo: user.uid)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        Map<String, dynamic> userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        setState(() {
+          nameController.text = userData['name'] ?? '';
+          phoneController.text = userData['phone'] ?? '';
+          housenoController.text = userData['houseNo'] ?? '';
+          roadnameController.text = userData['roadName'] ?? '';
+          cityController.text = userData['city'] ?? '';
+          stateController.text = userData['state'] ?? '';
+          pinCodeController.text = userData['pincode'] ?? '';
+        });
+      }
+    } catch (e) {
+      print('Error fetching user address data: $e');
     }
   }
 
-  TextEditingController pinCodeController = TextEditingController();
-  TextEditingController housenoController = TextEditingController();
-  TextEditingController cityController = TextEditingController();
-  TextEditingController roadnameController = TextEditingController();
-  TextEditingController stateController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
+  Future<void> getCurrentLocation() async {
+    bool isLocationEnabled = await checkPermissionPhone();
+    if (!isLocationEnabled) return;
+
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        _position = position;
+        _getAddressFromLatLng(_position!);
+      });
+    } catch (e) {
+      print('Error getting current location: $e');
+    }
+  }
+
+  Future<void> _getAddressFromLatLng(Position position) async {
+    try {
+      List<Placemark> placemarks =
+      await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+        setState(() {
+          housenoController.text = place.name ?? '';
+          roadnameController.text = place.street ?? '';
+          cityController.text = place.subLocality ?? '';
+          stateController.text = place.administrativeArea ?? '';
+          pinCodeController.text = place.postalCode ?? '';
+        });
+      }
+    } catch (e) {
+      print('Error getting address from coordinates: $e');
+    }
+  }
 
   Future<bool> checkPermissionPhone() async {
     bool isLocationEnabled;
@@ -76,69 +115,19 @@ class _DeliveryLocationMarkingPageState
       if (permission == LocationPermission.denied) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text("Location is disabled")));
+
         return false;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Location permission are permanently denied")));
+          content: Text("Location permissions are permanently denied")));
+
       return false;
     }
     return true;
   }
-
-  Future<void> getCurrentLocation() async {
-    final hasPermission = await checkPermissionPhone();
-    if (!hasPermission) return;
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((Position position) {
-      setState(() {
-        _position = position;
-        _getAddressFromLatLng(_position!);
-      });
-    }).catchError((e) {});
-  }
-
-  Future<void> _getAddressFromLatLng(Position position) async {
-    await placemarkFromCoordinates(_position!.latitude, _position!.longitude)
-        .then((List<Placemark> placemarks) {
-      Placemark place = placemarks[0];
-      setState(() {
-        address = '${place.street}, ${place.subLocality},'
-            ' ${place.postalCode}, '
-            '${place.administrativeArea},${place.name}';
-        pincode = place.postalCode;
-        houseno = place.name;
-        roadname = place.street;
-        city = place.subLocality;
-        state = place.administrativeArea;
-        housenoController.text = houseno.toString();
-        roadnameController.text = roadname.toString();
-        cityController.text = city.toString();
-        stateController.text = state.toString();
-        pinCodeController.text = pincode.toString();
-      });
-    }).catchError((e) {
-      debugPrint(e);
-    });
-  }
-
-  // Future<void> _fetchAddresses() async {
-  //   _currentUser = FirebaseAuth.instance.currentUser!;
-  //   try {
-  //     final QuerySnapshot addressSnapshot = await FirebaseFirestore.instance
-  //         .collection('addresses')
-  //         .where('userId', isEqualTo: _currentUser.uid)
-  //         .get();
-  //     setState(() {
-  //       _isLoading = false;
-  //       _addressList = addressSnapshot.docs;
-  //     });
-  //   } catch (error) {
-  //     print('Error fetching addresses: $error');
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -148,106 +137,90 @@ class _DeliveryLocationMarkingPageState
       ),
       body: ListView(
         children: [
-          // Card(
-          //   child: _isLoading
-          //       ? Center(child: CircularProgressIndicator())
-          //       : _addressList.isEmpty
-          //           ? Center(child: Text('No addresses found'))
-          //           : ListView.builder(
-          //               itemCount: _addressList.length,
-          //               itemBuilder: (context, index) {
-          //                 final addressData = _addressList[index].data()
-          //                     as Map<String, dynamic>;
-          //                 return ListTile(
-          //                   title: Text(addressData['name']),
-          //                   subtitle: Text(
-          //                       '${addressData['houseNo']}, ${addressData['roadName']}, ${addressData['city']}, ${addressData['state']}, ${addressData['pincode']}'),
-          //                 );
-          //               },
-          //             ),
-          // ),
           Form(
-              child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                      label: Text("Full Name"), border: OutlineInputBorder()),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                        labelText: "Full Name",
+                        border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: phoneController,
-                  decoration: InputDecoration(
-                      label: Text("Phone Number"),
-                      border: OutlineInputBorder()),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: phoneController,
+                    decoration: InputDecoration(
+                        labelText: "Phone Number",
+                        border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: housenoController,
-                  decoration: InputDecoration(
-                      label: Text("House number"),
-                      border: OutlineInputBorder()),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: housenoController,
+                    decoration: InputDecoration(
+                        labelText: "House number",
+                        border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: roadnameController,
-                  decoration: InputDecoration(
-                      label: Text("LandMark"), border: OutlineInputBorder()),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: roadnameController,
+                    decoration: InputDecoration(
+                        labelText: "LandMark", border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: cityController,
-                  decoration: InputDecoration(
-                      label: Text("Road name or area"),
-                      border: OutlineInputBorder()),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: cityController,
+                    decoration: InputDecoration(
+                        labelText: "Road name or area",
+                        border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextFormField(
-                  controller: stateController,
-                  decoration: InputDecoration(
-                      label: Text("State"), border: OutlineInputBorder()),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextFormField(
+                    controller: stateController,
+                    decoration: InputDecoration(
+                        labelText: "State", border: OutlineInputBorder()),
+                  ),
                 ),
-              ),
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: SizedBox(
-                      width: 150,
-                      child: TextFormField(
-                        controller: pinCodeController,
-                        decoration: InputDecoration(
-                            label: Text("Pincode"),
-                            border: OutlineInputBorder()),
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: SizedBox(
+                        width: 150,
+                        child: TextFormField(
+                          controller: pinCodeController,
+                          decoration: InputDecoration(
+                              labelText: "Pincode",
+                              border: OutlineInputBorder()),
+                        ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          getCurrentLocation();
-                        },
-                        child: Text("Use my location")),
-                  ),
-                ],
-              ),
-            ],
-          )),
+                    Padding(
+                      padding: const EdgeInsets.all(30.0),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            getCurrentLocation();
+                          },
+                          child: Text("Use my location")),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           Padding(
-            padding: const EdgeInsets.only(right: 155, left: 155),
+            padding: const EdgeInsets.all(20),
             child: ElevatedButton(
               onPressed: () {
                 saveAddress();
@@ -255,84 +228,57 @@ class _DeliveryLocationMarkingPageState
               child: Text('Save Address'),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 155, left: 155),
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => GoogleMapSample(),
-                      ));
-                });
-              },
-              child: Text('Google Map'),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  // Function to save the address in Firestore
   Future<void> saveAddress() async {
-    // Check if any fields are empty
-    if (nameController.text.isEmpty ||
-        phoneController.text.isEmpty ||
-        housenoController.text.isEmpty ||
-        roadnameController.text.isEmpty ||
-        cityController.text.isEmpty ||
-        stateController.text.isEmpty ||
-        pinCodeController.text.isEmpty) {
-      // Show an error message indicating that all fields are required
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Please fill out all fields before saving the address.'),
-          duration: Duration(seconds: 3),
-        ),
-      );
-      return; // Exit the function early
-    }
-
-    // Access Firestore instance
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    // Construct address data object
     Map<String, dynamic> addressData = {
-      'userId': FirebaseAuth.instance.currentUser!.uid, // Add userId field
+      'userId': FirebaseAuth.instance.currentUser!.uid,
       'name': nameController.text,
       'phone': phoneController.text,
-      'houseNo': housenoController.text,
-      'roadName': roadnameController.text,
-      'city': cityController.text,
-      'state': stateController.text,
-      'pincode': pinCodeController.text,
+      'houseNo': housenoController.text.isNotEmpty ? housenoController.text : null,
+      'roadName': roadnameController.text.isNotEmpty ? roadnameController.text : null,
+      'city': cityController.text.isNotEmpty ? cityController.text : null,
+      'state': stateController.text.isNotEmpty ? stateController.text : null,
+      'pincode': pinCodeController.text.isNotEmpty ? pinCodeController.text : null,
     };
 
     try {
-      // Add address data to Firestore
-      await firestore.collection('addresses').add(addressData);
-      // Show success message or navigate to another screen
+      DocumentSnapshot orderSnapshot = await firestore.collection('orders').doc(widget.orderId).get();
+      if (!orderSnapshot.exists) {
+        throw Exception('Order document not found');
+      }
+
+      DocumentReference addressRef = await firestore.collection('addresses').add(addressData);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Address saved successfully')),
       );
-      // Navigate to another screen if needed
-      Navigator.pushAndRemoveUntil(
+
+      await firestore.collection('orders').doc(widget.orderId).update({
+        'address': addressRef,
+        'orderStatus': 'Processing',
+      });
+
+      Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => PlaceOrderAndOrderSummery()),
-        (route) => false,
+        MaterialPageRoute(
+          builder: (context) => PlaceOrderAndOrderSummery(
+            orderId: widget.orderId,
+            addressData: addressData,
+          ),
+        ),
       );
     } catch (error) {
-      // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to save address'),
           duration: Duration(seconds: 3),
         ),
       );
-      // Handle error
       print('Error saving address: $error');
     }
   }
