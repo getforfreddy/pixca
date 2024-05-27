@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.1
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -54,6 +54,7 @@ dependencies:
   path_provider: ^2.1.3
   path: ^1.9.0
   google_maps_flutter: ^2.6.1
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +71,12 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
+
+
 flutter:
 
   # The following line ensures that the Material Icons font is
@@ -82,6 +89,7 @@ flutter:
     - assect/animations/login.json
     - assect/animations/paymentPg.json
     - assect/animations/signUp.json
+    - assect/animations/forgotPass.json
     - assect/animations/loadingLottie.json
     - assect/animations/logoSplash.json
     - assect/images/carousielSlider/iPhoneList.jpeg

@@ -177,40 +177,6 @@ class _LoginSampleState extends State<LoginSample> {
                                     child: Text("Login"),
                                   ),
                                 ),
-
-                                // SizedBox(
-                                //   width: 160.w,
-                                //   height: 40.h,
-                                //   child: ElevatedButton(
-                                //       onPressed: () async {
-                                //         if (login.currentState!.validate()) {
-                                //           emailPassController.updateLoading();
-                                //           try {
-                                //             UserCredential? userCredential =
-                                //                 await emailPassController
-                                //                     .signinUser(
-                                //               userNameController.text,
-                                //               passwordController.text,
-                                //             );
-                                //             if (userCredential!
-                                //                 .user!.emailVerified) {
-                                //               final user = userCredential.user;
-                                //               Get.offAll(
-                                //                   () => const HomeSample(),
-                                //                   transition: Transition
-                                //                       .leftToRightWithFade);
-                                //             }
-                                //           } catch (e) {
-                                //             print(e);
-                                //           } finally {
-                                //             emailPassController.updateLoading();
-                                //           }
-                                //         } else {
-                                //          print("Something went wrong***************************");
-                                //         }
-                                //       },
-                                //       child: Text("Login")),
-                                // ),
                                 SizedBox(
                                   height: 100,
                                   width: 240,
@@ -233,24 +199,7 @@ class _LoginSampleState extends State<LoginSample> {
                                         ],
                                       )),
                                 ),
-                                // Padding(
-                                //   padding: const EdgeInsets.only(top: 12),
-                                //   child: SizedBox(
-                                //     width: 190.w,
-                                //     height: 40.h,
-                                //     child: ElevatedButton(onPressed: () {
-                                //
-                                //     }, child: Row(
-                                //       children: [
-                                //         SizedBox(
-                                //             width:80,
-                                //             height: 80,
-                                //             child: Image.asset("assect/images/icones/GoogleSymbol.png")),
-                                //         Text("Sign in with Google"),
-                                //       ],
-                                //     )),
-                                //   ),
-                                // ),
+
                                 Padding(
                                   padding: const EdgeInsets.all(20.0),
                                   child: TextButton(

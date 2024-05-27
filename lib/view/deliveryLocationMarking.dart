@@ -39,6 +39,8 @@ class _DeliveryLocationMarkingPageState
     super.initState();
     user = FirebaseAuth.instance.currentUser!;
     fetchUserAddressData();
+    fetchProductNamesFromCart();
+
   }
 
   Future<void> fetchUserAddressData() async {
@@ -65,6 +67,27 @@ class _DeliveryLocationMarkingPageState
     }
   }
 
+  Future<void> fetchProductNamesFromCart() async {
+    try {
+      QuerySnapshot cartSnapshot = await FirebaseFirestore.instance
+          .collection('cart')
+          .where('userId', isEqualTo: user.uid)
+          .get();
+
+      if (cartSnapshot.docs.isNotEmpty) {
+        List<String> productNames = [];
+        cartSnapshot.docs.forEach((doc) {
+          productNames.add(doc['productName']);
+        });
+        setState(() {
+          // Assuming product names are stored in the 'productName' field
+          widget.productData['productNames'] = productNames;
+        });
+      }
+    } catch (e) {
+      print('Error fetching product names from cart: $e');
+    }
+  }
   Future<void> getCurrentLocation() async {
     bool isLocationEnabled = await checkPermissionPhone();
     if (!isLocationEnabled) return;
@@ -140,6 +163,14 @@ class _DeliveryLocationMarkingPageState
           Form(
             child: Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    (widget.productData['productNames'] as List<String>).join(', ') ?? 'Product Names',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: TextFormField(

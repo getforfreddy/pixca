@@ -4,27 +4,28 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:lottie/lottie.dart';
 import 'package:pixca/controller/carousel-Controler.dart';
 import 'package:pixca/controller/googleSignInController.dart';
-import 'package:pixca/view/addPhonesToFireBase.dart';
 import 'package:pixca/view/cameraSample.dart';
 import 'package:pixca/view/cartScreen.dart';
 import 'package:pixca/view/notificationscreen.dart';
 import 'package:pixca/view/phoneScreen.dart';
 import 'package:pixca/view/productBrandList.dart';
+import 'package:pixca/view/productDetailingPage.dart';
 import 'package:pixca/view/settingsScreen.dart';
 import 'package:pixca/view/upload_file.dart';
 import 'package:pixca/view/watchesScreenSample.dart';
 import 'package:pixca/view/wishList.dart';
 import 'package:shimmer/shimmer.dart';
+
 import '../controller/getUserDataController.dart';
 import 'accessoriesScreen.dart';
-import 'package:lottie/lottie.dart';
 import 'orderScreen.dart';
-
 
 class HomeSample extends StatefulWidget {
   const HomeSample({super.key});
@@ -34,11 +35,10 @@ class HomeSample extends StatefulWidget {
 }
 
 class _HomeSampleState extends State<HomeSample> {
-  ImageController carouselController = Get.put(ImageController());
+  ImageController caroselController = Get.put(ImageController());
   GoogleController googleController = Get.put(GoogleController());
   final GoogleSignIn googleSignIn = GoogleSignIn();
-  final GetUserDataController _getUserDataController =
-  Get.put(GetUserDataController());
+  final GetUserDataController _getUserDadtaController = Get.put(GetUserDataController());
 
   late final User user;
   late List<QueryDocumentSnapshot<Object?>> userData = [];
@@ -51,7 +51,7 @@ class _HomeSampleState extends State<HomeSample> {
   }
 
   Future<void> _getUserData() async {
-    userData = await _getUserDataController.getUserData(user.uid);
+    userData = await _getUserDadtaController.getUserData(user.uid);
     if (mounted) {
       setState(() {});
     }
@@ -78,8 +78,7 @@ class _HomeSampleState extends State<HomeSample> {
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(
-                  "${userData.isNotEmpty ? userData[0]['username'] : 'N/A'}"),
+              child: Text("${userData.isNotEmpty ? userData[0]['username'] : 'N/A'}"),
             ),
             ListTile(
               leading: Icon(CupertinoIcons.cube_box),
@@ -87,7 +86,9 @@ class _HomeSampleState extends State<HomeSample> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => OrderScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => OrderScreen(),
+                  ),
                 );
               },
               trailing: Icon(Icons.arrow_forward_ios_sharp),
@@ -98,7 +99,9 @@ class _HomeSampleState extends State<HomeSample> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => WishlistScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => WishlistScreen(),
+                  ),
                 );
               },
               trailing: Icon(Icons.arrow_forward_ios_sharp),
@@ -109,18 +112,9 @@ class _HomeSampleState extends State<HomeSample> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SettingsSample()),
-                );
-              },
-              trailing: Icon(Icons.arrow_forward_ios_sharp),
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text("Add phones"),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Addphonestofirebase()),
+                  MaterialPageRoute(
+                    builder: (context) => SettingsSample(),
+                  ),
                 );
               },
               trailing: Icon(Icons.arrow_forward_ios_sharp),
@@ -131,25 +125,27 @@ class _HomeSampleState extends State<HomeSample> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => UploadImageFile()),
+                  MaterialPageRoute(
+                    builder: (context) => UploadImageFile(),
+                  ),
                 );
               },
               trailing: Icon(Icons.arrow_forward_ios_sharp),
             ),
             ListTile(
-                onTap: () async {
-                  await googleController.signOutGoogle();
-                  print(
-                      "*************** Logged out **************************************");
-                },
-                leading: Icon(
-                  Icons.logout,
-                  color: Colors.red,
-                ),
-                title: Text(
-                  "Logout",
-                  style: TextStyle(color: Colors.red),
-                ))
+              onTap: () async {
+                await googleController.signOutGoogle();
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              leading: Icon(
+                Icons.logout,
+                color: Colors.red,
+              ),
+              title: Text(
+                "Logout",
+                style: TextStyle(color: Colors.red),
+              ),
+            )
           ],
         ),
       ),
@@ -164,13 +160,16 @@ class _HomeSampleState extends State<HomeSample> {
             child: Icon(CupertinoIcons.search),
           ),
           IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CameraSample()),
-                );
-              },
-              icon: Icon(CupertinoIcons.camera))
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CameraSample(),
+                ),
+              );
+            },
+            icon: Icon(CupertinoIcons.camera),
+          ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -205,7 +204,7 @@ class _HomeSampleState extends State<HomeSample> {
             case 2:
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CartSample()),
+                MaterialPageRoute(builder: (context) => CartSample(productData: {},)),
               );
               break;
           }
@@ -216,47 +215,56 @@ class _HomeSampleState extends State<HomeSample> {
           Row(
             children: [
               TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => PhoneSalesSample()),
-                    );
-                  },
-                  child: Text("Phones")),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PhoneSalesSample(),
+                    ),
+                  );
+                },
+                child: Text("Phones"),
+              ),
               TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => WatchesSample()),
-                    );
-                  },
-                  child: Text("Watches")),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WatchesSample(),
+                    ),
+                  );
+                },
+                child: Text("Watches"),
+              ),
               TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AccessoriesSample()),
-                    );
-                  },
-                  child: Text("Accessories")),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AccessoriesSample(),
+                    ),
+                  );
+                },
+                child: Text("Accessories"),
+              ),
             ],
           ),
           Obx(() {
-            if (carouselController.carouselImages.isEmpty) {
+            if (caroselController.carouselImages.isEmpty) {
               return Center(
                 heightFactor: 500.h,
                 widthFactor: 500.w,
                 child: SizedBox(
-                    width: 100,
-                    height: 100,
-                    child:
-                    Lottie.asset('assect/animations/loadingLottie.json')),
+                  width: 100,
+                  height: 100,
+                  child: Lottie.asset('assect/animations/loadingLottie.json'),
+                ),
               );
             } else {
               return CarouselSlider.builder(
-                itemCount: carouselController.carouselImages.length,
+                itemCount: caroselController.carouselImages.length,
                 itemBuilder: (context, index, realIndex) {
-                  final uid = carouselController.carouselImages[index];
+                  final uid = caroselController.carouselImages[index];
 
                   return InkWell(
                     onTap: () {
@@ -269,8 +277,7 @@ class _HomeSampleState extends State<HomeSample> {
                     },
                     child: Padding(
                       padding: EdgeInsets.all(10),
-                      child: Image.network(
-                          carouselController.carouselImages[index]),
+                      child: Image.network(caroselController.carouselImages[index]),
                     ),
                   );
                 },
@@ -279,7 +286,7 @@ class _HomeSampleState extends State<HomeSample> {
             }
           }),
           Obx(() {
-            if (carouselController.brandImages.isEmpty) {
+            if (caroselController.brandImages.isEmpty) {
               return Shimmer.fromColors(
                 child: CircularProgressIndicator(),
                 baseColor: Colors.grey,
@@ -293,17 +300,15 @@ class _HomeSampleState extends State<HomeSample> {
                   color: Colors.white,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: carouselController.brandImages.length,
+                    itemCount: caroselController.brandImages.length,
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
-                          String selectedBrandName = carouselController
-                              .brandNames[index]; // Accessing brandNames RxList
+                          String selectedBrandName = caroselController.brandNames[index];
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  ProductListPage(brand: selectedBrandName),
+                              builder: (context) => ProductListPage(brand: selectedBrandName),
                             ),
                           );
                         },
@@ -311,7 +316,7 @@ class _HomeSampleState extends State<HomeSample> {
                           child: CircleAvatar(
                             radius: 100,
                             backgroundImage: NetworkImage(
-                              carouselController.brandImages[index],
+                              caroselController.brandImages[index],
                             ),
                             backgroundColor: Colors.transparent,
                           ),
@@ -332,53 +337,96 @@ class _HomeSampleState extends State<HomeSample> {
           ),
           Obx(
                 () {
-              if (carouselController.newLaunchedGrid.isEmpty) {
+              if (caroselController.newLaunchedGrid.isEmpty) {
                 return Shimmer.fromColors(
-                    child: Text("Loading"),
-                    baseColor: Colors.grey,
-                    highlightColor: CupertinoColors.activeBlue);
+                  child: Text("Loading"),
+                  baseColor: Colors.grey,
+                  highlightColor: CupertinoColors.activeBlue,
+                );
               } else {
                 return SizedBox(
-                  height: 505,
-                  child: GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                    ),
-                    itemCount: 4,
-                    itemBuilder: (context, index) {
-                      return InkWell(
-                        onTap: () {
-                          String selectedBrandName = carouselController
-                              .brandNames[index]; // Accessing brandNames RxList
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ProductListPage(brand: selectedBrandName),
+                  height: 655,
+                  child: FutureBuilder<QuerySnapshot>(
+                    future: FirebaseFirestore.instance.collection('Products').get(),
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Center(child: Text('No products found.'));
+                      }
+                      return GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 10.0,
+                          mainAxisSpacing: 10.0,
+                          childAspectRatio: 0.8,
+                        ),
+                        itemCount: 4,
+                        itemBuilder: (context, index) {
+                          var productData = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+
+                          String productName = productData['productName'] ?? 'Unnamed Product';
+                          String productImage = productData['image'] ?? 'No image found';
+                          List<dynamic> colorList = productData['color'] ?? [];
+                          String color = colorList.join(', ');
+                          String description = productData['description'] ?? 'No description available';
+                          String brand = productData['brand'] ?? 'Unknown Brand';
+                          double price = 0.0;
+                          if (productData['price'] != null) {
+                            String priceString = productData['price'].toString();
+                            priceString = priceString.replaceAll(RegExp(r'[$,]'), '');
+                            price = double.tryParse(priceString) ?? 0.0;
+                          }
+                          String romString = '';
+                          if (productData['ROM'] != null && productData['ROM'] is List<dynamic>) {
+                            List<dynamic> rom = productData['ROM'];
+                            romString = rom.join(', ');
+                          }
+
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProductDetailScreen(productData: productData),
+                                ),
+                              );
+                            },
+                            child: Card(
+                              child: Column(
+                                children: [
+                                  ClipRect(
+                                    child: Image.network(
+                                      productImage,
+                                      height: 200,
+                                    ),
+                                  ),
+                                  SizedBox(height: 15),
+                                  Text(
+                                    productName,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  SizedBox(height: 15),
+                                  Text(
+                                    brand,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              shape: Border(),
                             ),
                           );
                         },
-                        child: Card(
-                          child: Column(
-                            children: [
-                              ClipRect(
-                                child: Image.network(
-                                  carouselController.newLaunchedGrid[index],
-                                  height: 200,
-                                ),
-                              ),
-                              SizedBox(
-                                height: 15,
-                              ),
-                              Text(
-                                carouselController.gridPhoneName[index],
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.w500),
-                              ),
-                            ],
-                          ),
-                          shape: Border(),
-                        ),
                       );
                     },
                   ),
@@ -426,12 +474,13 @@ class _HomeSampleState extends State<HomeSample> {
               height: 200,
               color: Colors.grey[300],
               child: Center(
-                  child: Text(
-                    "End",
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  )),
+                child: Text(
+                  "End",
+                  style: TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+              ),
             ),
           )
         ],

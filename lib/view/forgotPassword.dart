@@ -29,10 +29,7 @@ class _ForgotPasswordSampleState extends State<ForgotPasswordSample> {
       ),
       body: ListView(
         children: [
-          Center(
-            child:
-                SizedBox(height: 170.h, width: 250.w, child: Lottie.asset('')),
-          ),
+          SizedBox(height: 170.h, width: 250.w, child: Lottie.asset('assect/animations/loadingLottie.json')),
           Center(
               child: Padding(
             padding: const EdgeInsets.all(48.0),

@@ -196,7 +196,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               'Price: Rs ${widget.productData['price'] ?? ''}',
               style: TextStyle(fontSize: 18),
             ),
-
             SizedBox(height: 10),
             Text('Color:'),
             Wrap(
@@ -224,7 +223,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 );
               }).toList(),
             ),
-
             SizedBox(height: 10),
             Text('RAM: ${widget.productData['ram'] ?? ''}'),
             SizedBox(height: 10),
@@ -262,7 +260,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
             SizedBox(height: 20),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -280,8 +277,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: Text('Mandatory Selection'),
-                            content: Text(
-                                'Please select both a color and ROM before placing your order.'),
+                            content: Text('Please select both a color and ROM before placing your order.'),
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -293,7 +289,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                         );
                       } else {
-                        placeOrder();
+                        await placeOrder();
                       }
                     },
                     child: Text(
@@ -315,8 +311,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: Text('Mandatory Selection'),
-                            content: Text(
-                                'Please select both a color and ROM before adding to the cart.'),
+                            content: Text('Please select both a color and ROM before adding to the cart.'),
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -328,7 +323,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                         );
                       } else {
-                        addToCart();
+                        await addToCart();
                       }
                     },
                     child: Text(
@@ -344,6 +339,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
     );
   }
+
   Future<void> placeOrder() async {
     try {
       if (_userId == null) {
@@ -433,8 +429,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-
-
   // Function to add the product to the cart
   Future<void> addToCart() async {
     try {
@@ -482,17 +476,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         await FirebaseFirestore.instance.collection('cart').add({
           'userId': _userId,
           'pid': widget.productData['pid'],
-          // Add product ID
           'productName': widget.productData['productName'],
           'price': price,
-          'totalPrice': totalPriceWithoutShipping + 20,
-          // Including shipping charge
+          'totalPrice': totalPriceWithoutShipping + 20, // Including shipping charge
           'gst': gstAmount,
           'shippingCharge': 20,
           'quantity': 1,
           'color': _selectedColor, // Save the selected color
           'rom': _selectedROM, // Save the selected ROM
-          // Add other product details as needed
         });
       }
 
@@ -502,11 +493,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           duration: Duration(seconds: 2),
         ),
       );
+
       Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CartSample(),
-          ));
+        context,
+        MaterialPageRoute(
+          builder: (context) => CartSample(productData: widget.productData),
+        ),
+      );
     } catch (error) {
       print('Error adding item to cart: $error');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -517,6 +510,4 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
     }
   }
-
-
 }
