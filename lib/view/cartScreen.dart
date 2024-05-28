@@ -168,69 +168,69 @@ class _CartSampleState extends State<CartSample> {
 //*******************************************************************************
 
 //      Check if the product already exists in the orders
-//       final orderSnapshot = await FirebaseFirestore.instance
-//           .collection('orders')
-//           .where('pid', isEqualTo: widget.productData['pid'])
-//           .where('userId', isEqualTo: _userId)
-//           .where('color', isEqualTo: _selectedColor)
-//           .where('rom', isEqualTo: _selectedROM)
-//           .get();
-//
-//       if (orderSnapshot.docs.isNotEmpty) {
-//         // Product already exists in the orders, update quantity and total price
-//         final orderItem = orderSnapshot.docs.first;
-//         final quantity = orderItem['quantity'] + 1; // Increment quantity
-//         final totalPrice = totalPriceWithoutShipping * quantity +
-//             20; // Recalculate total price with shipping charge
-//         await orderItem.reference.update({
-//           'quantity': quantity,
-//           'totalPrice': totalPrice,
-//           'status': 'Pending', // Add or update status field
-//         });
-//       } else {
-//         // Product doesn't exist in the orders, add it
-//         await FirebaseFirestore.instance.collection('orders').add({
-//           'orderId': orderId,
-//           // Assign orderId
-//           'userId': _userId,
-//           'pid': productData['pid'],
-//           'productName': productData['productName'],
-//           'price': price,
-//           'totalPrice': totalPriceWithoutShipping + 20,
-//           // Including shipping charge
-//           'gst': gstAmount,
-//           'shippingCharge': 20,
-//           'quantity': 1,
-//           'color': _selectedColor,
-//           // Save the selected color
-//           'rom': _selectedROM,
-//           // Save the selected ROM
-//           'orderStatus': 'Pending',
-//           // Initial order status
-//           'status': 'Pending',
-//           // Add status field
-//         });
-//
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(
-//             content: Text('Choose your address..'),
-//             duration: Duration(seconds: 2),
-//           ),
-//         );
-//       }
-//
-// // Check if orderStatus is Pending
-//       if (orderSnapshot.docs.isNotEmpty &&
-//           orderSnapshot.docs.first['orderStatus'] == 'Pending') {
-//         // Navigate to the next page
-//         Navigator.push(
-//           context,
-//           MaterialPageRoute(
-//             builder: (context) =>
-//                 DeliveryLocationMarkingPage(
-//                     productData: productData, orderId: orderId),
-//           ),
-//         );
+      final orderSnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .where('pid', isEqualTo: widget.productData['pid'])
+          .where('userId', isEqualTo: _userId)
+          .where('color', isEqualTo: _selectedColor)
+          .where('rom', isEqualTo: _selectedROM)
+          .get();
+
+      if (orderSnapshot.docs.isNotEmpty) {
+        // Product already exists in the orders, update quantity and total price
+        final orderItem = orderSnapshot.docs.first;
+        final quantity = orderItem['quantity'] + 1; // Increment quantity
+        final totalPrice = totalPriceWithoutShipping * quantity +
+            20; // Recalculate total price with shipping charge
+        await orderItem.reference.update({
+          'quantity': quantity,
+          'totalPrice': totalPrice,
+          'status': 'Pending', // Add or update status field
+        });
+      } else {
+        // Product doesn't exist in the orders, add it
+        await FirebaseFirestore.instance.collection('orders').add({
+          'orderId': orderId,
+          // Assign orderId
+          'userId': _userId,
+          'pid': productData['pid'],
+          'productName': productData['productName'],
+          'price': price,
+          'totalPrice': totalPriceWithoutShipping + 20,
+          // Including shipping charge
+          'gst': gstAmount,
+          'shippingCharge': 20,
+          'quantity': 1,
+          'color': _selectedColor,
+          // Save the selected color
+          'rom': _selectedROM,
+          // Save the selected ROM
+          'orderStatus': 'Pending',
+          // Initial order status
+          'status': 'Pending',
+          // Add status field
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Choose your address..'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+// Check if orderStatus is Pending
+      if (orderSnapshot.docs.isNotEmpty &&
+          orderSnapshot.docs.first['orderStatus'] == 'Pending') {
+        // Navigate to the next page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                DeliveryLocationMarkingPage(
+                    productData: productData, orderId: orderId),
+          ),
+        );
       //*******************************************************************************
       // Navigate to address saving page and pass order details
       Navigator.push(
@@ -245,7 +245,7 @@ class _CartSampleState extends State<CartSample> {
       );
       //*******************************************************************************
 
-    // }
+    }
     //*******************************************************************************
   }
 
