@@ -11,6 +11,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pixca/controller/carousel-Controler.dart';
 import 'package:pixca/controller/googleSignInController.dart';
+import 'package:pixca/view/addPhonesToFireBase.dart';
 import 'package:pixca/view/cameraSample.dart';
 import 'package:pixca/view/cartScreen.dart';
 import 'package:pixca/view/notificationscreen.dart';
@@ -121,12 +122,12 @@ class _HomeSampleState extends State<HomeSample> {
             ),
             ListTile(
               leading: Icon(Icons.photo_camera_back),
-              title: Text("Upload image"),
+              title: Text("Upload phone to database"),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => UploadImageFile(),
+                    builder: (context) => Addphonestofirebase(),
                   ),
                 );
               },

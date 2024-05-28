@@ -40,7 +40,6 @@ class _DeliveryLocationMarkingPageState
     user = FirebaseAuth.instance.currentUser!;
     fetchUserAddressData();
     fetchProductNamesFromCart();
-
   }
 
   Future<void> fetchUserAddressData() async {
@@ -80,7 +79,6 @@ class _DeliveryLocationMarkingPageState
           productNames.add(doc['productName']);
         });
         setState(() {
-          // Assuming product names are stored in the 'productName' field
           widget.productData['productNames'] = productNames;
         });
       }
@@ -88,6 +86,7 @@ class _DeliveryLocationMarkingPageState
       print('Error fetching product names from cart: $e');
     }
   }
+
   Future<void> getCurrentLocation() async {
     bool isLocationEnabled = await checkPermissionPhone();
     if (!isLocationEnabled) return;
@@ -166,11 +165,10 @@ class _DeliveryLocationMarkingPageState
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Text(
-                    (widget.productData['productNames'] as List<String>).join(', ') ?? 'Product Names',
+                    (widget.productData['productNames'] as List<String>).join(', '),
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: TextFormField(
@@ -279,8 +277,12 @@ class _DeliveryLocationMarkingPageState
     };
 
     try {
+      // Logging the orderId for debugging purposes
+      print('Order ID: ${widget.orderId}');
+
       DocumentSnapshot orderSnapshot = await firestore.collection('orders').doc(widget.orderId).get();
       if (!orderSnapshot.exists) {
+        print('Order document not found for orderId: ${widget.orderId}');
         throw Exception('Order document not found');
       }
 

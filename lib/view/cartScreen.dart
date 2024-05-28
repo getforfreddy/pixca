@@ -17,6 +17,7 @@ class CartSample extends StatefulWidget {
 }
 
 class _CartSampleState extends State<CartSample> {
+  int itemCount = 1; // Initial item count
   double grandTotal = 0.0;
   String? _userId;
   String _selectedColor = '';
@@ -79,7 +80,9 @@ class _CartSampleState extends State<CartSample> {
     double total = 0.0;
     for (var doc in cartSnapshot.docs) {
       final cartData = doc.data() as Map<String, dynamic>;
-      final itemTotalPrice = cartData['totalPrice'] ?? 0.0;
+      final itemPrice = cartData['price'] ?? 0.0;
+      final itemCount = cartData['quantity'] ?? 1;
+      final itemTotalPrice = itemPrice * itemCount;
       total += itemTotalPrice;
     }
     setState(() {
@@ -87,6 +90,16 @@ class _CartSampleState extends State<CartSample> {
     });
   }
 
+
+
+
+  // Future<void> deleteCartItem(String cartItemId) async {
+  //   await FirebaseFirestore.instance
+  //       .collection('cart')
+  //       .doc(cartItemId)
+  //       .delete();
+  //   calculateGrandTotal();
+  // }
   Future<void> deleteCartItem(String cartItemId) async {
     await FirebaseFirestore.instance
         .collection('cart')
@@ -305,42 +318,72 @@ class _CartSampleState extends State<CartSample> {
                                       cartData['totalPrice'] ?? 'N/A';
                                   final rom = cartData['rom'] ?? 'N/A';
                                   return GestureDetector(
-                                    child: Card(
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          if (imageUrl.isNotEmpty)
-                                            Image.network(
-                                              imageUrl,
-                                              height: 150,
-                                              width: 150,
-                                            ),
-                                          Column(
-                                            children: [
-                                              Text(productName,
-                                                  style:
-                                                      TextStyle(fontSize: 25)),
-                                              if (color.isNotEmpty &&
-                                                  index < color.length)
-                                                Text('Color: ${color[index]}',
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(18.0),
+                                      child: Card(
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            if (imageUrl.isNotEmpty)
+                                              Image.network(
+                                                imageUrl,
+                                                height: 150,
+                                                width: 150,
+                                              ),
+                                            Column(
+                                              children: [
+                                                Text(productName,
+                                                    style: TextStyle(
+                                                        fontSize: 25)),
+                                                if (color.isNotEmpty &&
+                                                    index < color.length)
+                                                  Text('Color: ${color[index]}',
+                                                      style: TextStyle(
+                                                          fontSize: 15)),
+                                                Text('ROM: $rom',
                                                     style: TextStyle(
                                                         fontSize: 15)),
-                                              Text('ROM: $rom',
-                                                  style:
-                                                      TextStyle(fontSize: 15)),
-                                              Text('price: $price',
-                                                  style:
-                                                      TextStyle(fontSize: 15)),
-                                            ],
-                                          ),
-                                          IconButton(
-                                              onPressed: () {},
-                                              icon: Icon(CupertinoIcons
-                                                  .delete_simple)),
-                                        ],
+                                                Text('price: $price',
+                                                    style: TextStyle(
+                                                        fontSize: 15)),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      if (itemCount > 1) {
+                                                        itemCount--;
+                                                        updateCartQuantity(cartItem.id, itemCount); // Update quantity in the cart
+                                                      }
+                                                    });
+                                                  },
+                                                  icon: Icon(Icons.remove),
+                                                ),
+                                                Text(
+                                                  '$itemCount',
+                                                  style: TextStyle(fontSize: 20),
+                                                ),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      itemCount++;
+                                                      updateCartQuantity(cartItem.id, itemCount); // Update quantity in the cart
+                                                    });
+                                                  },
+                                                  icon: Icon(Icons.add),
+                                                ),
+
+                                              ],
+                                            ),
+                                            IconButton(
+                                                onPressed: () {
+                                                  deleteCartItem(cartItem.id);
+                                                },
+                                                icon: Icon(CupertinoIcons
+                                                    .delete_simple)),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                     onTap: () {
