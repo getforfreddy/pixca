@@ -300,20 +300,29 @@ class _DeliveryLocationMarkingPageState
         SnackBar(content: Text('Address saved successfully')),
       );
 
-      await firestore.collection('orders').doc(widget.orderId).update({
-        'address': addressRef,
-        'orderStatus': 'Processing',
-      });
+      dynamic orderData = orderSnapshot.data();
+      if (orderData != null && orderData.containsKey('orderStatus')) {
+        String orderStatus = orderData['orderStatus'];
+        if (orderStatus == 'Pending') {
+          await firestore.collection('orders').doc(widget.orderId).update({
+            'address': addressRef,
+            'orderStatus': 'Processing',
+          });
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PlaceOrderAndOrderSummery(
-            orderId: widget.orderId,
-            addressData: addressData,
-          ),
-        ),
-      );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PlaceOrderAndOrderSummery(addressData: addressData),
+            ),
+          );
+        } else {
+          // Navigate to another page because orderStatus is not Pending
+          // Example: Navigator.push(context, MaterialPageRoute(builder: (context) => AnotherPage()));
+        }
+      } else {
+        print('Order status not found in order data');
+        // Handle the case where order status is not found
+      }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -324,5 +333,7 @@ class _DeliveryLocationMarkingPageState
       print('Error saving address: $error');
     }
   }
+
+
 
 }

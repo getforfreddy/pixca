@@ -2,9 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pixca/view/productDetailingPage.dart';
-
 import 'deliveryLocationMarking.dart';
 
 class CartSample extends StatefulWidget {
@@ -42,7 +40,7 @@ class _CartSampleState extends State<CartSample> {
 
   Future<Map<String, dynamic>> fetchProductDetails(String pid) async {
     final productSnapshot =
-        await FirebaseFirestore.instance.collection('Products').doc(pid).get();
+    await FirebaseFirestore.instance.collection('Products').doc(pid).get();
     if (productSnapshot.exists) {
       return productSnapshot.data() as Map<String, dynamic>;
     } else {
@@ -52,7 +50,7 @@ class _CartSampleState extends State<CartSample> {
 
   Future<void> updateCartQuantity(String cartItemId, int quantity) async {
     final cartDoc =
-        FirebaseFirestore.instance.collection('cart').doc(cartItemId);
+    FirebaseFirestore.instance.collection('cart').doc(cartItemId);
     final cartSnapshot = await cartDoc.get();
     if (cartSnapshot.exists) {
       final cartData = cartSnapshot.data() as Map<String, dynamic>;
@@ -100,7 +98,10 @@ class _CartSampleState extends State<CartSample> {
 
   Future<String> createOrder() async {
     // Implement your order creation logic here and return the orderId
-    final orderId = FirebaseFirestore.instance.collection('orders').doc().id;
+    final orderId = FirebaseFirestore.instance
+        .collection('orders')
+        .doc()
+        .id;
     return orderId;
   }
 
@@ -206,7 +207,8 @@ class _CartSampleState extends State<CartSample> {
 //           // Save the selected ROM
 //           'orderStatus': 'Pending',
 //           // Initial order status
-//           'status': 'Pending', // Add status field
+//           'status': 'Pending',
+//           // Add status field
 //         });
 //
 //         ScaffoldMessenger.of(context).showSnackBar(
@@ -215,233 +217,253 @@ class _CartSampleState extends State<CartSample> {
 //             duration: Duration(seconds: 2),
 //           ),
 //         );
-//*******************************************************************************
+//       }
+//
+// // Check if orderStatus is Pending
+//       if (orderSnapshot.docs.isNotEmpty &&
+//           orderSnapshot.docs.first['orderStatus'] == 'Pending') {
+//         // Navigate to the next page
+//         Navigator.push(
+//           context,
+//           MaterialPageRoute(
+//             builder: (context) =>
+//                 DeliveryLocationMarkingPage(
+//                     productData: productData, orderId: orderId),
+//           ),
+//         );
+      //*******************************************************************************
       // Navigate to address saving page and pass order details
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => DeliveryLocationMarkingPage(
-            productData: productData,
-            orderId: orderId, // Pass orderId to the next screen
-          ),
+          builder: (context) =>
+              DeliveryLocationMarkingPage(
+                productData: productData,
+                orderId: orderId, // Pass orderId to the next screen
+              ),
         ),
       );
       //*******************************************************************************
 
-       // }
-      //*******************************************************************************
-    } catch (error) {
-      print('Failed to place order: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to place order'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+    // }
+    //*******************************************************************************
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Cart"),
-      ),
-      body: _userId == null
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('cart')
-                        .where('userId', isEqualTo: _userId)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Text('Error: ${snapshot.error}'),
-                        );
-                      } else if (!snapshot.hasData ||
-                          snapshot.data!.docs.isEmpty) {
-                        return Center(
-                          child: Text('Your cart is empty'),
-                        );
-                      } else {
-                        final cartItems = snapshot.data!.docs;
-                        return ListView.builder(
-                          itemCount: cartItems.length,
-                          itemBuilder: (context, index) {
-                            final cartItem = cartItems[index];
-                            final cartData =
-                                cartItem.data() as Map<String, dynamic>;
-                            final productId = cartData['pid'] ?? '';
+  catch
 
-                            return FutureBuilder<Map<String, dynamic>>(
-                              future: fetchProductDetails(productId),
-                              builder: (context, productSnapshot) {
-                                if (productSnapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                } else if (productSnapshot.hasError) {
-                                  return Center(
-                                    child:
-                                        Text('Error: ${productSnapshot.error}'),
-                                  );
-                                } else {
-                                  final productData =
-                                      productSnapshot.data ?? {};
-                                  final imageUrl = productData['image'] ?? '';
-                                  final List color = productData['color'] ?? [];
-                                  final productName =
-                                      productData['productName'] ??
-                                          'Product Name';
-                                  final price = cartData['price'] ?? 'N/A';
-                                  final quantity =
-                                      cartData['quantity'] ?? 'N/A';
-                                  final gst = cartData['gst'] ?? '0';
-                                  final shippingCharge =
-                                      cartData['shippingCharge'] ?? 'N/A';
-                                  final totalPrice =
-                                      cartData['totalPrice'] ?? 'N/A';
-                                  final rom = cartData['rom'] ?? 'N/A';
-                                  return GestureDetector(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(18.0),
-                                      child: Card(
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            if (imageUrl.isNotEmpty)
-                                              Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: Image.network(
-                                                  imageUrl,
-                                                  height: 150,
-                                                  width: 150,
-                                                ),
-                                              ),
-                                            Column(
-                                              children: [
-                                                Text(productName,
-                                                    style: TextStyle(
-                                                        fontSize: 25)),
-                                                if (color.isNotEmpty &&
-                                                    index < color.length)
-                                                  Text('Color: ${color[index]}',
-                                                      style: TextStyle(
-                                                          fontSize: 15)),
-                                                Text('ROM: $rom',
-                                                    style: TextStyle(
-                                                        fontSize: 15)),
-                                                Text('price: $price',
-                                                    style: TextStyle(
-                                                        fontSize: 15)),
-                                                Row(
-                                                  children: [
-                                                    IconButton(
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          itemCount++;
-                                                          updateCartQuantity(
-                                                              cartItem.id,
-                                                              itemCount); // Update quantity in the cart
-                                                        });
-                                                      },
-                                                      icon: Icon(Icons.add),
-                                                    ),
-                                                    Text(
-                                                      '$itemCount',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
-                                                    ),
-                                                    IconButton(
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          if (itemCount > 1) {
-                                                            itemCount--;
-                                                            updateCartQuantity(
-                                                                cartItem.id,
-                                                                itemCount); // Update quantity in the cart
-                                                          }
-                                                        });
-                                                      },
-                                                      icon: Icon(Icons.remove),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                            IconButton(
-                                                onPressed: () {
-                                                  deleteCartItem(
-                                                      cartItem.id);
-                                                },
-                                                icon: Icon(CupertinoIcons
-                                                    .delete_simple)),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ProductDetailScreen(
-                                            productData: productData,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                }
-                              },
-                            );
-                          },
-                        );
-                      }
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Grand Total: Rs ${grandTotal.toStringAsFixed(2)}',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () async {
-                          // Create an order and pass the orderId and product data to the next screen
-                          final orderId = await createOrder();
+  (
 
-                          await placeOrder(orderId);
-                        },
-                        child: Text('Continue'),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 50, vertical: 15),
-                          textStyle: TextStyle(fontSize: 20),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-    );
+  error) {
+  print('Failed to place order: $error');
+  ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+  content: Text('Failed to place order'),
+  duration: Duration(seconds: 2),
+  ),
+  );
   }
 }
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text("Cart"),
+    ),
+    body: _userId == null
+        ? Center(child: CircularProgressIndicator())
+        : Column(
+      children: [
+        Expanded(
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('cart')
+                .where('userId', isEqualTo: _userId)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              } else if (!snapshot.hasData ||
+                  snapshot.data!.docs.isEmpty) {
+                return Center(
+                  child: Text('Your cart is empty'),
+                );
+              } else {
+                final cartItems = snapshot.data!.docs;
+                return ListView.builder(
+                  itemCount: cartItems.length,
+                  itemBuilder: (context, index) {
+                    final cartItem = cartItems[index];
+                    final cartData =
+                    cartItem.data() as Map<String, dynamic>;
+                    final productId = cartData['pid'] ?? '';
+
+                    return FutureBuilder<Map<String, dynamic>>(
+                      future: fetchProductDetails(productId),
+                      builder: (context, productSnapshot) {
+                        if (productSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (productSnapshot.hasError) {
+                          return Center(
+                            child:
+                            Text('Error: ${productSnapshot.error}'),
+                          );
+                        } else {
+                          final productData =
+                              productSnapshot.data ?? {};
+                          final imageUrl = productData['image'] ?? '';
+                          final List color = productData['color'] ?? [];
+                          final productName =
+                              productData['productName'] ??
+                                  'Product Name';
+                          final price = cartData['price'] ?? 'N/A';
+                          final quantity =
+                              cartData['quantity'] ?? 'N/A';
+                          final gst = cartData['gst'] ?? '0';
+                          final shippingCharge =
+                              cartData['shippingCharge'] ?? 'N/A';
+                          final totalPrice =
+                              cartData['totalPrice'] ?? 'N/A';
+                          final rom = cartData['rom'] ?? 'N/A';
+                          return GestureDetector(
+                            child: Padding(
+                              padding: const EdgeInsets.all(18.0),
+                              child: Card(
+                                child: Row(
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.end,
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    if (imageUrl.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Image.network(
+                                          imageUrl,
+                                          height: 150,
+                                          width: 150,
+                                        ),
+                                      ),
+                                    Column(
+                                      children: [
+                                        Text(productName,
+                                            style: TextStyle(
+                                                fontSize: 25)),
+                                        if (color.isNotEmpty &&
+                                            index < color.length)
+                                          Text('Color: ${color[index]}',
+                                              style: TextStyle(
+                                                  fontSize: 15)),
+                                        Text('ROM: $rom',
+                                            style: TextStyle(
+                                                fontSize: 15)),
+                                        Text('price: $price',
+                                            style: TextStyle(
+                                                fontSize: 15)),
+                                        Row(
+                                          children: [
+                                            IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  itemCount++;
+                                                  updateCartQuantity(
+                                                      cartItem.id,
+                                                      itemCount); // Update quantity in the cart
+                                                });
+                                              },
+                                              icon: Icon(Icons.add),
+                                            ),
+                                            Text(
+                                              '$itemCount',
+                                              style: TextStyle(
+                                                  fontSize: 20),
+                                            ),
+                                            IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  if (itemCount > 1) {
+                                                    itemCount--;
+                                                    updateCartQuantity(
+                                                        cartItem.id,
+                                                        itemCount); // Update quantity in the cart
+                                                  }
+                                                });
+                                              },
+                                              icon: Icon(Icons.remove),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    IconButton(
+                                        onPressed: () {
+                                          deleteCartItem(
+                                              cartItem.id);
+                                        },
+                                        icon: Icon(CupertinoIcons
+                                            .delete_simple)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ProductDetailScreen(
+                                        productData: productData,
+                                      ),
+                                ),
+                              );
+                            },
+                          );
+                        }
+                      },
+                    );
+                  },
+                );
+              }
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Text(
+                'Grand Total: Rs ${grandTotal.toStringAsFixed(2)}',
+                style: TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  // Create an order and pass the orderId and product data to the next screen
+                  final orderId = await createOrder();
+
+                  await placeOrder(orderId);
+                },
+                child: Text('Continue'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 50, vertical: 15),
+                  textStyle: TextStyle(fontSize: 20),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}}
