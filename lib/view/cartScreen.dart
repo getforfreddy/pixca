@@ -90,9 +90,6 @@ class _CartSampleState extends State<CartSample> {
     });
   }
 
-
-
-
   // Future<void> deleteCartItem(String cartItemId) async {
   //   await FirebaseFirestore.instance
   //       .collection('cart')
@@ -328,10 +325,13 @@ class _CartSampleState extends State<CartSample> {
                                               MainAxisAlignment.spaceEvenly,
                                           children: [
                                             if (imageUrl.isNotEmpty)
-                                              Image.network(
-                                                imageUrl,
-                                                height: 150,
-                                                width: 150,
+                                              Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Image.network(
+                                                  imageUrl,
+                                                  height: 150,
+                                                  width: 150,
+                                                ),
                                               ),
                                             Column(
                                               children: [
@@ -349,36 +349,45 @@ class _CartSampleState extends State<CartSample> {
                                                 Text('price: $price',
                                                     style: TextStyle(
                                                         fontSize: 15)),
-                                                IconButton(
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      if (itemCount > 1) {
-                                                        itemCount--;
-                                                        updateCartQuantity(cartItem.id, itemCount); // Update quantity in the cart
-                                                      }
-                                                    });
-                                                  },
-                                                  icon: Icon(Icons.remove),
+                                                Row(
+                                                  children: [
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          itemCount++;
+                                                          updateCartQuantity(
+                                                              cartItem.id,
+                                                              itemCount); // Update quantity in the cart
+                                                        });
+                                                      },
+                                                      icon: Icon(Icons.add),
+                                                    ),
+                                                    Text(
+                                                      '$itemCount',
+                                                      style: TextStyle(
+                                                          fontSize: 20),
+                                                    ),
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          if (itemCount > 1) {
+                                                            itemCount--;
+                                                            updateCartQuantity(
+                                                                cartItem.id,
+                                                                itemCount); // Update quantity in the cart
+                                                          }
+                                                        });
+                                                      },
+                                                      icon: Icon(Icons.remove),
+                                                    ),
+                                                  ],
                                                 ),
-                                                Text(
-                                                  '$itemCount',
-                                                  style: TextStyle(fontSize: 20),
-                                                ),
-                                                IconButton(
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      itemCount++;
-                                                      updateCartQuantity(cartItem.id, itemCount); // Update quantity in the cart
-                                                    });
-                                                  },
-                                                  icon: Icon(Icons.add),
-                                                ),
-
                                               ],
                                             ),
                                             IconButton(
                                                 onPressed: () {
-                                                  deleteCartItem(cartItem.id);
+                                                  deleteCartItem(
+                                                      cartItem.id);
                                                 },
                                                 icon: Icon(CupertinoIcons
                                                     .delete_simple)),
