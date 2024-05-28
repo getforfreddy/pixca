@@ -185,6 +185,7 @@ class _DeliveryLocationMarkingPageState
                     decoration: InputDecoration(
                         labelText: "Phone Number",
                         border: OutlineInputBorder()),
+                    keyboardType: TextInputType.name,
                   ),
                 ),
                 Padding(
@@ -194,6 +195,7 @@ class _DeliveryLocationMarkingPageState
                     decoration: InputDecoration(
                         labelText: "House number",
                         border: OutlineInputBorder()),
+                    keyboardType: TextInputType.phone,
                   ),
                 ),
                 Padding(
@@ -232,6 +234,7 @@ class _DeliveryLocationMarkingPageState
                           decoration: InputDecoration(
                               labelText: "Pincode",
                               border: OutlineInputBorder()),
+                          keyboardType: TextInputType.number,
                         ),
                       ),
                     ),
