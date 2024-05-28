@@ -286,7 +286,13 @@ class _DeliveryLocationMarkingPageState
       DocumentSnapshot orderSnapshot = await firestore.collection('orders').doc(widget.orderId).get();
       if (!orderSnapshot.exists) {
         print('Order document not found for orderId: ${widget.orderId}');
-        throw Exception('Order document not found');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Order document not found'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+        return; // Return without proceeding further
       }
 
       DocumentReference addressRef = await firestore.collection('addresses').add(addressData);
@@ -318,4 +324,5 @@ class _DeliveryLocationMarkingPageState
       print('Error saving address: $error');
     }
   }
+
 }
