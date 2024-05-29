@@ -110,7 +110,7 @@ class _SettingsSampleState extends State<SettingsSample> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => AboutSample(),
+                        builder: (context) => AboutPage(),
                       ));
                 },
                 leading: Icon(Icons.question_mark),

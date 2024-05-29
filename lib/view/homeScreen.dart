@@ -19,6 +19,7 @@ import 'package:pixca/view/phoneScreen.dart';
 import 'package:pixca/view/productBrandList.dart';
 import 'package:pixca/view/productDetailingPage.dart';
 import 'package:pixca/view/settingsScreen.dart';
+import 'package:pixca/view/summery.dart';
 import 'package:pixca/view/upload_file.dart';
 import 'package:pixca/view/watchesScreenSample.dart';
 import 'package:pixca/view/wishList.dart';
@@ -146,7 +147,20 @@ class _HomeSampleState extends State<HomeSample> {
                 "Logout",
                 style: TextStyle(color: Colors.red),
               ),
-            )
+            ),
+            ListTile(
+              leading: Icon(Icons.photo_camera_back),
+              title: Text("OrderSummery"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SummeryAddressAndAmount(),
+                  ),
+                );
+              },
+              trailing: Icon(Icons.arrow_forward_ios_sharp),
+            ),
           ],
         ),
       ),

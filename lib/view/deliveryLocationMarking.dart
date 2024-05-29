@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:pixca/view/paymentScreen.dart';
 
 import '../view/placeOrderAndOrderSummery.dart'; // Adjust path as necessary
 
@@ -50,7 +51,9 @@ class _DeliveryLocationMarkingPageState
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        Map<String, dynamic> userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        Map<String, dynamic> userData = querySnapshot.docs.first.data() as Map<
+            String,
+            dynamic>;
         setState(() {
           nameController.text = userData['name'] ?? '';
           phoneController.text = userData['phone'] ?? '';
@@ -165,7 +168,8 @@ class _DeliveryLocationMarkingPageState
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Text(
-                    (widget.productData['productNames'] as List<String>).join(', '),
+                    (widget.productData['productNames'] as List<String>).join(
+                        ', '),
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -268,22 +272,35 @@ class _DeliveryLocationMarkingPageState
   Future<void> saveAddress() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+    // Prepare address data from form fields
     Map<String, dynamic> addressData = {
       'userId': FirebaseAuth.instance.currentUser!.uid,
       'name': nameController.text,
       'phone': phoneController.text,
-      'houseNo': housenoController.text.isNotEmpty ? housenoController.text : null,
-      'roadName': roadnameController.text.isNotEmpty ? roadnameController.text : null,
+      'houseNo': housenoController.text.isNotEmpty
+          ? housenoController.text
+          : null,
+      'roadName': roadnameController.text.isNotEmpty
+          ? roadnameController.text
+          : null,
       'city': cityController.text.isNotEmpty ? cityController.text : null,
       'state': stateController.text.isNotEmpty ? stateController.text : null,
-      'pincode': pinCodeController.text.isNotEmpty ? pinCodeController.text : null,
+      'pincode': pinCodeController.text.isNotEmpty
+          ? pinCodeController.text
+          : null,
     };
 
     try {
       // Logging the orderId for debugging purposes
       print('Order ID: ${widget.orderId}');
 
-      DocumentSnapshot orderSnapshot = await firestore.collection('orders').doc(widget.orderId).get();
+      // Get the order document
+      DocumentSnapshot orderSnapshot = await firestore
+          .collection('orders')
+          .doc(widget.orderId)
+          .get();
+
+      // Check if the order document exists
       if (!orderSnapshot.exists) {
         print('Order document not found for orderId: ${widget.orderId}');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -295,35 +312,30 @@ class _DeliveryLocationMarkingPageState
         return; // Return without proceeding further
       }
 
-      DocumentReference addressRef = await firestore.collection('addresses').add(addressData);
+      // Add the address to Firestore
+      DocumentReference addressRef =
+      await firestore.collection('addresses').add(addressData);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Address saved successfully')),
       );
 
-      dynamic orderData = orderSnapshot.data();
-      if (orderData != null && orderData.containsKey('orderStatus')) {
-        String orderStatus = orderData['orderStatus'];
-        if (orderStatus == 'Pending') {
-          await firestore.collection('orders').doc(widget.orderId).update({
-            'address': addressRef,
-            'orderStatus': 'Processing',
-          });
+      // Update the order document with address reference and change order status
+      await firestore.collection('orders').doc(widget.orderId).update({
+        'address': addressRef,
+        'orderStatus': 'Processing',
+      });
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PlaceOrderAndOrderSummery(addressData: addressData),
-            ),
-          );
-        } else {
-          // Navigate to another page because orderStatus is not Pending
-          // Example: Navigator.push(context, MaterialPageRoute(builder: (context) => AnotherPage()));
-        }
-      } else {
-        print('Order status not found in order data');
-        // Handle the case where order status is not found
-      }
+      // Navigate to the next page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaceOrderAndOrderSummery(
+            addressData: addressData,
+          ),
+        ),
+      );
     } catch (error) {
+      // Show error message if saving address fails
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to save address'),
@@ -333,7 +345,4 @@ class _DeliveryLocationMarkingPageState
       print('Error saving address: $error');
     }
   }
-
-
-
 }
