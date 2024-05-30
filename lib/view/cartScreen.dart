@@ -37,7 +37,7 @@ class _CartSampleState extends State<CartSample> {
 
   Future<void> deleteCartItem(String cartItemId) async {
     await FirebaseFirestore.instance
-        .collection('Products')
+        .collection('cart') // Ensure this is the correct collection
         .doc(cartItemId)
         .delete();
     calculateGrandTotal();
@@ -53,144 +53,24 @@ class _CartSampleState extends State<CartSample> {
     double total = 0.0;
     for (var doc in cartSnapshot.docs) {
       final cartData = doc.data() as Map<String, dynamic>;
-      final itemPrice = cartData['price'] ?? 0.0;
+      final rawItemPrice = cartData['price'];
+
+      // Remove commas from the price string
+      final priceString = rawItemPrice.replaceAll(',', '');
+
+      // Convert the price string to double
+      double itemPrice = double.tryParse(priceString) ?? 0.0;
+
       final itemCount = cartData['quantity'] ?? 1;
+      print('Item Price: $itemPrice, Item Count: $itemCount');
       final itemTotalPrice = itemPrice * itemCount;
       total += itemTotalPrice;
     }
+
     setState(() {
       grandTotal = total;
+      print(grandTotal);
     });
-  }
-
-  Future<void> updateCartQuantity(String cartItemId, int quantity) async {
-    final cartDoc =
-        FirebaseFirestore.instance.collection('cart').doc(cartItemId);
-    final cartSnapshot = await cartDoc.get();
-    if (cartSnapshot.exists) {
-      final cartData = cartSnapshot.data() as Map<String, dynamic>;
-      final price = cartData['price'] ?? 0.0;
-      final gst = cartData['gst'] ?? 0.0;
-      final shippingCharge = cartData['shippingCharge'] ?? 0.0;
-      final totalPrice = (price * quantity) + gst + shippingCharge;
-
-      await cartDoc.update({
-        'quantity': quantity,
-        'totalPrice': totalPrice,
-      });
-
-      calculateGrandTotal();
-    }
-  }
-
-  Future<void> placeOrder(String orderId) async {
-    try {
-      if (_userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('User not logged in'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        print('User not logged in'); // For debugging
-        return;
-      }
-
-      // Fetch all items in the cart for the current user
-      final cartSnapshot = await FirebaseFirestore.instance
-          .collection('cart')
-          .where('userId', isEqualTo: _userId)
-          .get();
-
-      if (cartSnapshot.docs.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Cart is empty'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        print('Cart is empty'); // For debugging
-        return;
-      }
-
-      // Iterate through each item in the cart and add it to the orders collection
-      for (var cartItem in cartSnapshot.docs) {
-        final cartData = cartItem.data();
-        final productId = cartData['pid'];
-
-        // Retrieve product details
-        final productDetails = await fetchProductDetails(productId);
-
-        // Extract price from cart data
-        final rawPriceString = cartData['price'].toString();
-        double price;
-        try {
-          price = double.parse(rawPriceString);
-        } catch (e) {
-          print('Error parsing price string: $e');
-          continue; // Skip adding this item to the orders collection
-        }
-
-        final gstRate = 0.18; // GST rate of 18%
-        final gstAmount = price * gstRate;
-
-        // Calculate total price without shipping charge
-        final totalPriceWithoutShipping = price + gstAmount;
-
-        // Add item to the orders collection
-        await FirebaseFirestore.instance.collection('orders').add({
-          'orderId': orderId,
-          'userId': _userId,
-          'pid': productId,
-          'productName': cartData['productName'],
-          'image': cartData['image'],
-          'price': price,
-          'totalPrice': totalPriceWithoutShipping + 20,
-          // Including shipping charge
-          'gst': gstAmount,
-          'shippingCharge': 20,
-          'quantity': cartData['quantity'],
-          'color': cartData['color'],
-          'rom': cartData['rom'],
-          'orderStatus': 'Pending',
-          'status': 'Pending',
-        });
-
-        // Delete the item from the cart since it's been added to the orders
-        // await FirebaseFirestore.instance
-        //     .collection('cart')
-        //     .doc(cartItem.id)
-        //     .delete();
-      }
-
-      // Show a success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Choose your address'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      final productData = widget.productData;
-
-      // Navigate to the next page
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DeliveryLocationMarkingPage(
-            orderId: orderId,
-            productData: productData,
-          ),
-        ),
-      );
-    } catch (error) {
-      print('Failed to place order: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to place order'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
   }
 
   Future<void> fetchUserId() async {
@@ -204,16 +84,17 @@ class _CartSampleState extends State<CartSample> {
 
   Future<Map<String, dynamic>> fetchProductDetails(String pid) async {
     try {
-      final cartSnapshot =
-          await FirebaseFirestore.instance.collection('cart').doc(pid).get();
-      return {};
+      final productSnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .doc(pid)
+          .get();
+      return productSnapshot.data() ?? {};
     } catch (error) {
       print('Error fetching product details: $error');
       return {};
     }
   }
 
-  // createOrder, and placeOrder remain the same as in your original code.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -228,6 +109,7 @@ class _CartSampleState extends State<CartSample> {
                   child: StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('cart')
+                        .where('userId', isEqualTo: _userId)
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -249,7 +131,6 @@ class _CartSampleState extends State<CartSample> {
                             final quantity = cartData['quantity'];
                             final price = cartData['price'];
                             final productName = cartData['productName'];
-                            // final List color = cartData['color'];
                             // Handling the color field
                             dynamic colorData = cartData['color'];
                             List<String> colorList = [];
@@ -261,7 +142,6 @@ class _CartSampleState extends State<CartSample> {
                               colorList = List<String>.from(colorData);
                             }
                             final image = cartData['image'];
-
                             final rom = cartData['rom'];
                             return GestureDetector(
                               child: Padding(
@@ -296,11 +176,7 @@ class _CartSampleState extends State<CartSample> {
                                             children: [
                                               IconButton(
                                                 onPressed: () async {
-                                                  setState(() {
-                                                    itemCount++;
-                                                  });
-                                                  await updateCartQuantity(cartItem.id, itemCount);
-                                                  calculateGrandTotal();
+                                                  setState(() {});
                                                 },
                                                 icon: Icon(Icons.add),
                                               ),
@@ -311,12 +187,8 @@ class _CartSampleState extends State<CartSample> {
                                               IconButton(
                                                 onPressed: () async {
                                                   setState(() {
-                                                    if (itemCount > 1) {
-                                                      itemCount--;
-                                                    }
+                                                    if (itemCount > 1) {}
                                                   });
-                                                  await updateCartQuantity(cartItem.id, itemCount);
-                                                  calculateGrandTotal();
                                                 },
                                                 icon: Icon(Icons.remove),
                                               ),
@@ -335,15 +207,7 @@ class _CartSampleState extends State<CartSample> {
                                 ),
                               ),
                               onTap: () {
-                                // Navigator.push(
-                                // context,
-                                // MaterialPageRoute(
-                                // builder: (context) =>
-                                // ProductDetailScreen(
-                                // productData: productData,
-                                // ),
-                                // ),
-                                // );
+                                // Navigate to product details if needed
                               },
                             );
                           },
@@ -357,17 +221,80 @@ class _CartSampleState extends State<CartSample> {
                   child: Column(
                     children: [
                       Text(
-                        'Grand Total: Rs ${grandTotal.toStringAsFixed(2)}',
+                        'Grand Total: Rs ${grandTotal}',
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: () async {
-                          // Create an order and pass the orderId and product data to the next screen
+                          // Generate a unique order ID
                           final orderId = await createOrder();
 
-                          await placeOrder(orderId);
+                          // Retrieve all items from the user's cart
+                          final cartSnapshot = await FirebaseFirestore.instance
+                              .collection('cart')
+                              .where('userId', isEqualTo: _userId)
+                              .get();
+
+                          // Iterate over each item in the cart
+                          for (var cartItem in cartSnapshot.docs) {
+                            // Get the cart item data
+                            final cartData =
+                                cartItem.data() as Map<String, dynamic>;
+                            final productId = cartData['pid'];
+                            final price = cartData['price'];
+                            final quantity = cartData['quantity'];
+                            final productName = cartData['productName'];
+                            final color = cartData['color'];
+                            final rom = cartData['rom'];
+                            final image = cartData['image'];
+
+                            try {
+                              // Add the item to the orders collection
+                              await FirebaseFirestore.instance
+                                  .collection('orders')
+                                  .add({
+                                'orderId': orderId,
+                                'userId': _userId,
+                                'pid': productId,
+                                'productName': productName,
+                                'image': image,
+                                'price': price,
+                                'totalPrice': price * quantity,
+                                'quantity': quantity,
+                                'color': color,
+                                'rom': rom,
+                                'orderStatus': 'Processing',
+                                'timestamp': Timestamp.now(),
+                                // Add timestamp for ordering
+                              });
+
+                              // Delete the item from the cart
+                              await deleteCartItem(cartItem.id);
+                            } catch (error) {
+                              print(
+                                  'Error adding item to orders collection: $error');
+                              // Handle any errors that occur during the process
+                            }
+                          }
+
+                          // Show a success message or navigate to the next screen
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Order placed successfully'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DeliveryLocationMarkingPage(
+                                        productData: widget.productData,
+                                        orderId: orderId),
+                              ));
                         },
                         child: Text('Continue'),
                         style: ElevatedButton.styleFrom(
