@@ -71,7 +71,7 @@ class _PaymentPageState extends State<PaymentPage> {
       'key': RazorPayCredentials.keyId,
       'amount': amountInPaise,
       'currency': 'INR',
-      'name': 'Jim Mathew',
+      'name': 'Freddy Nixal',
       'description': 'Description for order',
       'timeout': 60,
       'prefill': {

@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:pixca/view/paymentScreen.dart';
-
 import '../view/placeOrderAndOrderSummery.dart'; // Adjust path as necessary
 
 class DeliveryLocationMarkingPage extends StatefulWidget {
@@ -41,6 +40,8 @@ class _DeliveryLocationMarkingPageState
     user = FirebaseAuth.instance.currentUser!;
     fetchUserAddressData();
     fetchProductNamesFromCart();
+    fetchOrders();
+    widget.productData['productNames'] ??= []; // Ensure it's initialized
   }
 
   Future<void> fetchUserAddressData() async {
@@ -51,9 +52,8 @@ class _DeliveryLocationMarkingPageState
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        Map<String, dynamic> userData = querySnapshot.docs.first.data() as Map<
-            String,
-            dynamic>;
+        Map<String, dynamic> userData =
+        querySnapshot.docs.first.data() as Map<String, dynamic>;
         setState(() {
           nameController.text = userData['name'] ?? '';
           phoneController.text = userData['phone'] ?? '';
@@ -79,7 +79,8 @@ class _DeliveryLocationMarkingPageState
       if (cartSnapshot.docs.isNotEmpty) {
         List<String> productNames = [];
         cartSnapshot.docs.forEach((doc) {
-          productNames.add(doc['productName']);
+          // Ensure each product name is cast to String
+          productNames.add(doc['productName'].toString());
         });
         setState(() {
           widget.productData['productNames'] = productNames;
@@ -87,6 +88,27 @@ class _DeliveryLocationMarkingPageState
       }
     } catch (e) {
       print('Error fetching product names from cart: $e');
+    }
+  }
+
+  Future<void> fetchOrders() async {
+    try {
+      QuerySnapshot orderSnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .where('userId', isEqualTo: user.uid)
+          .get();
+
+      if (orderSnapshot.docs.isNotEmpty) {
+        List<Map<String, dynamic>> orders = [];
+        orderSnapshot.docs.forEach((doc) {
+          orders.add(doc.data() as Map<String, dynamic>);
+        });
+        setState(() {
+          widget.productData['orders'] = orders;
+        });
+      }
+    } catch (e) {
+      print('Error fetching orders: $e');
     }
   }
 
@@ -168,8 +190,9 @@ class _DeliveryLocationMarkingPageState
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Text(
-                    (widget.productData['productNames'] as List<String>).join(
-                        ', '),
+                    (widget.productData['productNames'] as List<dynamic>)
+                        .cast<String>()
+                        .join(', '),
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -178,8 +201,7 @@ class _DeliveryLocationMarkingPageState
                   child: TextFormField(
                     controller: nameController,
                     decoration: InputDecoration(
-                        labelText: "Full Name",
-                        border: OutlineInputBorder()),
+                        labelText: "Full Name", border: OutlineInputBorder()),
                     keyboardType: TextInputType.name,
                   ),
                 ),
@@ -258,12 +280,11 @@ class _DeliveryLocationMarkingPageState
           Padding(
             padding: const EdgeInsets.all(20),
             child: ElevatedButton(
-              onPressed: () {
-                saveAddress();
-              },
-              child: Text('Save Address'),
-            ),
-          ),
+                onPressed: () {
+                  saveAddress();
+                },
+                child: Text("Save Address")),
+          )
         ],
       ),
     );
@@ -272,36 +293,31 @@ class _DeliveryLocationMarkingPageState
   Future<void> saveAddress() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    // Prepare address data from form fields
     Map<String, dynamic> addressData = {
-      'userId': FirebaseAuth.instance.currentUser!.uid,
+      'userId': user.uid,
       'name': nameController.text,
       'phone': phoneController.text,
-      'houseNo': housenoController.text.isNotEmpty
-          ? housenoController.text
-          : null,
-      'roadName': roadnameController.text.isNotEmpty
-          ? roadnameController.text
-          : null,
+      'houseNo':
+      housenoController.text.isNotEmpty ? housenoController.text : null,
+      'roadName':
+      roadnameController.text.isNotEmpty ? roadnameController.text : null,
       'city': cityController.text.isNotEmpty ? cityController.text : null,
       'state': stateController.text.isNotEmpty ? stateController.text : null,
-      'pincode': pinCodeController.text.isNotEmpty
-          ? pinCodeController.text
-          : null,
+      'pincode':
+      pinCodeController.text.isNotEmpty ? pinCodeController.text : null,
     };
 
     try {
-      // Logging the orderId for debugging purposes
       print('Order ID: ${widget.orderId}');
 
-      // Get the order document
-      DocumentSnapshot orderSnapshot = await firestore
+// Query Firestore to find the document with orderId equal to widget.orderId
+      QuerySnapshot orderQuerySnapshot = await firestore
           .collection('orders')
-          .doc(widget.orderId)
+          .where('orderId', isEqualTo: widget.orderId)
           .get();
 
-      // Check if the order document exists
-      if (!orderSnapshot.exists) {
+// Check if any document matches the query
+      if (orderQuerySnapshot.docs.isEmpty) {
         print('Order document not found for orderId: ${widget.orderId}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -309,36 +325,34 @@ class _DeliveryLocationMarkingPageState
             duration: Duration(seconds: 3),
           ),
         );
-        return; // Return without proceeding further
+        return; // Exit the method if order document doesn't exist
       }
 
-      // Add the address to Firestore
-      DocumentReference addressRef =
-      await firestore.collection('addresses').add(addressData);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Address saved successfully')),
-      );
+// Get the first document that matches the query (assuming orderId is unique)
+      DocumentSnapshot orderSnapshot = orderQuerySnapshot.docs.first;
 
-      // Update the order document with address reference and change order status
-      await firestore.collection('orders').doc(widget.orderId).update({
-        'address': addressRef,
-        'orderStatus': 'Processing',
-      });
+      // DocumentReference addressRef =
+      // await firestore.collection('addresses').add(addressData);
+      //
+      // await firestore.collection('orders').doc(widget.orderId).update({
+      //   'address': addressRef,
+      //   'orderStatus': 'Processing',
+      // });
 
-      // Navigate to the next page
+      // Navigate to the summary page
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PlaceOrderAndOrderSummery(
-            addressData: addressData,
-          ),
+          builder: (context) =>
+              PlaceOrderAndOrderSummery(
+                addressData: addressData,
+              ),
         ),
       );
     } catch (error) {
-      // Show error message if saving address fails
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to save address'),
+          content: Text('Failed to save address: $error'),
           duration: Duration(seconds: 3),
         ),
       );

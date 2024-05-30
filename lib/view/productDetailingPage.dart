@@ -207,8 +207,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               Text('Color:'),
               Wrap(
                 spacing: 5.w,
-                children: (widget.productData['color'] as List<dynamic> ?? [])
-                    .map<Widget>((color) {
+                children: (widget.productData['color'] as List<dynamic> ?? []).map<Widget>((color) {
+
                   return Material(
                     borderRadius: BorderRadius.circular(20),
                     child: InkWell(
@@ -352,108 +352,98 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
     }
 
-    Future<void> placeOrder() async {
-      try {
-        if (_userId == null) {
-          // Handle the case where the user ID is not available
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('User not logged in'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-          return;
-        }
-
-        String priceString = widget.productData['price']
-            .toString()
-            .trim()
-            .replaceAll(',', ''); // Trim whitespace and remove commas
-        double price = double.parse(priceString);
-        double gstRate = 0.18; // GST rate of 18%
-        double gstAmount = price * gstRate;
-
-
-        // Calculate total price without shipping charge
-        double totalPriceWithoutShipping = price + gstAmount;
-
-        // Generate orderId
-        String orderId = FirebaseFirestore.instance
-            .collection('orders')
-            .doc()
-            .id;
-
-        // Check if the product already exists in the orders
-        QuerySnapshot orderSnapshot = await FirebaseFirestore.instance
-            .collection('orders')
-            .where('pid', isEqualTo: widget.productData['pid'])
-            .where('userId', isEqualTo: _userId)
-            .where('color', isEqualTo: _selectedColor)
-            .where('rom', isEqualTo: _selectedROM)
-            .get();
-
-        if (orderSnapshot.docs.isNotEmpty) {
-          // Product already exists in the orders, update quantity and total price
-          DocumentSnapshot orderItem = orderSnapshot.docs.first;
-          int quantity = orderItem['quantity'] + 1; // Increment quantity
-          double totalPrice = totalPriceWithoutShipping * quantity +
-              20; // Recalculate total price with shipping charge
-          await orderItem.reference.update(
-              {'quantity': quantity, 'totalPrice': totalPrice});
-        } else {
-          // Product doesn't exist in the orders, add it
-          DocumentReference orderRef = await FirebaseFirestore.instance
-              .collection('orders').add({
-            'orderId': orderId,
-            // Assign orderId
-            'userId': _userId,
-            'pid': widget.productData['pid'],
-            'productName': widget.productData['productName'],
-            'price': price,
-            'totalPrice': totalPriceWithoutShipping + 20,
-            // Including shipping charge
-            'gst': gstAmount,
-            'shippingCharge': 20,
-            'quantity': 1,
-            'color': _selectedColor,
-            // Save the selected color
-            'rom': _selectedROM,
-            // Save the selected ROM
-            'orderStatus': 'Pending',
-            // Initial order status
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Choose your address..'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-
-          // Navigate to address saving page and pass order details
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  DeliveryLocationMarkingPage(
-                    productData: widget.productData,
-                    orderId: orderId, // Pass orderId to the next screen
-                  ),
-            ),
-          );
-        }
-      } catch (error) {
-        print('Failed to place order: $error');
+  Future<void> placeOrder() async {
+    try {
+      if (_userId == null) {
+        // Handle the case where the user ID is not available
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to place order'),
+            content: Text('User not logged in'),
             duration: Duration(seconds: 2),
           ),
         );
+        return;
       }
-    }
 
-    // Function to add the product to the cart
+      // Parsing and calculating price and GST
+      String priceString = widget.productData['price']
+          .toString()
+          .trim()
+          .replaceAll(',', ''); // Trim whitespace and remove commas
+      double price = double.parse(priceString);
+      double gstRate = 0.18; // GST rate of 18%
+      double gstAmount = price * gstRate;
+
+      // Calculate total price without shipping charge
+      double totalPriceWithoutShipping = price + gstAmount;
+
+      // Generate orderId
+      String orderId = FirebaseFirestore.instance.collection('orders').doc().id;
+
+      // Check if the product already exists in the orders
+      QuerySnapshot orderSnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .where('pid', isEqualTo: widget.productData['pid'])
+          .where('userId', isEqualTo: _userId)
+          .where('color', isEqualTo: _selectedColor)
+          .where('rom', isEqualTo: _selectedROM)
+          .get();
+
+      if (orderSnapshot.docs.isNotEmpty) {
+        // Product already exists in the orders, update quantity and total price
+        DocumentSnapshot orderItem = orderSnapshot.docs.first;
+        int quantity = orderItem['quantity'] + 1; // Increment quantity
+        double totalPrice = totalPriceWithoutShipping * quantity + 20; // Recalculate total price with shipping charge
+        await orderItem.reference.update({'quantity': quantity, 'totalPrice': totalPrice});
+      } else {
+        // Product doesn't exist in the orders, add it
+        DocumentReference orderRef = await FirebaseFirestore.instance.collection('orders').add({
+          'orderId': orderId, // Assign orderId
+          'userId': _userId,
+          'pid': widget.productData['pid'],
+          'productName': widget.productData['productName'],
+          'price': price,
+          'totalPrice': totalPriceWithoutShipping + 20, // Including shipping charge
+          'gst': gstAmount,
+          'shippingCharge': 20,
+          'quantity': 1,
+          'color': _selectedColor, // Save the selected color
+          'rom': _selectedROM, // Save the selected ROM
+          'orderStatus': 'Pending', // Initial order status
+        });
+
+        // Inform user to choose address and navigate to the address page
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Choose your address..'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Navigate to address saving page and pass order details
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DeliveryLocationMarkingPage(
+              productData: widget.productData,
+              orderId: orderId, // Pass orderId to the next screen
+            ),
+          ),
+        );
+      }
+    } catch (error) {
+      print('Failed to place order: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to place order'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+
+  // Function to add the product to the cart
     Future<void> addToCart() async {
       try {
         if (_userId == null) {

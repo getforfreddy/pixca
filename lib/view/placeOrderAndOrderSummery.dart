@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pixca/view/paymentScreen.dart';
 
 class PlaceOrderAndOrderSummery extends StatelessWidget {
   final Map<String, dynamic> addressData;
@@ -42,25 +44,39 @@ class PlaceOrderAndOrderSummery extends StatelessWidget {
     );
   }
 
-  void confirmOrder(BuildContext context) {
-    // Implement logic to confirm the order
-    // For example, you can navigate to a success page or show a confirmation dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Order Confirmed'),
-          content: Text('Your order with ID $orderId has been confirmed successfully.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
+  void confirmOrder(BuildContext context) async {
+    // Fetch order details
+    try {
+      DocumentSnapshot orderSnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId)
+          .get();
+
+      if (!orderSnapshot.exists) {
+        print('Order document not found for orderId: $orderId');
+        return;
+      }
+
+      // Get order data
+      Map<String, dynamic> orderData = orderSnapshot.data() as Map<String, dynamic>;
+
+      // Navigate to PaymentPage with order details
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentPage(
+            orderId: orderId!, // Assert that orderId is not null
+            image1: orderData['image1'], // Pass the relevant order details
+            brand: orderData['brand'],
+            totalAmount: orderData['totalAmount'],
+            userId: orderData['userId'],
+          ),
+        ),
+      );
+
+
+    } catch (e) {
+      print('Error fetching order details: $e');
+    }
   }
 }
