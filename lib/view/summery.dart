@@ -106,6 +106,7 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
                       final orders = orderData.data() as Map<String, dynamic>;
                       final productName = orders['productName'];
                       final color = orders['color'];
+                      final quantity= orders['quantity'];
                       // Handling the color field
                       dynamic ordersData = orders['color'];
                       List<String> colorList = [];
@@ -141,7 +142,9 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
                                       productName,
                                       style: TextStyle(fontSize: 25),
                                     ),
-                                    Text('ROM: $color',
+                                    Text('color: $color',
+                                        style: TextStyle(fontSize: 15)),
+                                    Text('quantity: $quantity',
                                         style: TextStyle(fontSize: 15)),
                                     Text('ROM: $rom',
                                         style: TextStyle(fontSize: 15)),
