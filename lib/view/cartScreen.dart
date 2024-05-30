@@ -65,7 +65,7 @@ class _CartSampleState extends State<CartSample> {
 
   Future<void> updateCartQuantity(String cartItemId, int quantity) async {
     final cartDoc =
-        FirebaseFirestore.instance.collection('cart').doc(cartItemId);
+    FirebaseFirestore.instance.collection('cart').doc(cartItemId);
     final cartSnapshot = await cartDoc.get();
     if (cartSnapshot.exists) {
       final cartData = cartSnapshot.data() as Map<String, dynamic>;
@@ -205,7 +205,7 @@ class _CartSampleState extends State<CartSample> {
   Future<Map<String, dynamic>> fetchProductDetails(String pid) async {
     try {
       final cartSnapshot =
-          await FirebaseFirestore.instance.collection('cart').doc(pid).get();
+      await FirebaseFirestore.instance.collection('cart').doc(pid).get();
       return {};
     } catch (error) {
       print('Error fetching product details: $error');
@@ -223,160 +223,160 @@ class _CartSampleState extends State<CartSample> {
       body: _userId == null
           ? Center(child: CircularProgressIndicator())
           : Column(
-            children: [
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance.collection('cart').snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return Center(child: Text('Your cart is empty'));
-                      } else {
-                        final cartItems = snapshot.data!.docs;
-                        return ListView.builder(
-                          itemCount: cartItems.length,
-                          itemBuilder: (context, index) {
-                            final cartItem = cartItems[index];
-                            final cartData = cartItem.data() as Map<String, dynamic>;
-                            final productId = cartData['pid'];
-                            final quantity = cartData['quantity'];
-                            final price = cartData['price'];
-                            final productName = cartData['productName'];
-                            // final List color = cartData['color'];
-                // Handling the color field
-                            dynamic colorData = cartData['color'];
-                            List<String> colorList = [];
-                            if (colorData is String) {
-                              // If colorData is a string, split it by comma to create a list
-                              colorList = colorData.split(',');
-                            } else if (colorData is List) {
-                              // If colorData is already a list, assign it directly
-                              colorList = List<String>.from(colorData);
-                            }
-                            final image = cartData['image'];
-                
-                            final rom = cartData['rom'];
-                            return GestureDetector(
-                              child: Padding(
-                                padding: const EdgeInsets.all(18.0),
-                                child: Card(
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Image.network(
-                                          image,
-                                          height: 150,
-                                          width: 150,
-                                        ),
-                                      ),
-                                      Column(
-                                        children: [
-                                          Text(
-                                            productName,
-                                            style: TextStyle(fontSize: 25),
-                                          ),
-                                          Text(colorList[0],
-                                              style: TextStyle(fontSize: 25)),
-                                          Text('ROM: $rom',
-                                              style: TextStyle(fontSize: 15)),
-                                          Text('price: $price',
-                                              style: TextStyle(fontSize: 15)),
-                                          Row(
-                                            children: [
-                                              IconButton(
-                                                onPressed: () {
-                                                  setState(() {
-                                                    itemCount++;
-                                                    updateCartQuantity(
-                                                        cartItem.id, itemCount);
-                                                  });
-                                                },
-                                                icon: Icon(Icons.add),
-                                              ),
-                                              Text(
-                                                '$quantity',
-                                                style: TextStyle(fontSize: 20),
-                                              ),
-                                              IconButton(
-                                                onPressed: () {
-                                                  setState(() {
-                                                    if (itemCount > 1) {
-                                                      itemCount--;
-                                                      updateCartQuantity(
-                                                          cartItem.id, itemCount);
-                                                    }
-                                                  });
-                                                },
-                                                icon: Icon(Icons.remove),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      IconButton(
-                                          onPressed: () {
-                                            deleteCartItem(cartItem.id);
-                                          },
-                                          icon: Icon(CupertinoIcons.delete_simple)),
-                                    ],
+        children: [
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('cart').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('Your cart is empty'));
+                } else {
+                  final cartItems = snapshot.data!.docs;
+                  return ListView.builder(
+                    itemCount: cartItems.length,
+                    itemBuilder: (context, index) {
+                      final cartItem = cartItems[index];
+                      final cartData = cartItem.data() as Map<String, dynamic>;
+                      final productId = cartData['pid'];
+                      final quantity = cartData['quantity'];
+                      final price = cartData['price'];
+                      final productName = cartData['productName'];
+                      // final List color = cartData['color'];
+                      // Handling the color field
+                      dynamic colorData = cartData['color'];
+                      List<String> colorList = [];
+                      if (colorData is String) {
+                        // If colorData is a string, split it by comma to create a list
+                        colorList = colorData.split(',');
+                      } else if (colorData is List) {
+                        // If colorData is already a list, assign it directly
+                        colorList = List<String>.from(colorData);
+                      }
+                      final image = cartData['image'];
+
+                      final rom = cartData['rom'];
+                      return GestureDetector(
+                        child: Padding(
+                          padding: const EdgeInsets.all(18.0),
+                          child: Card(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Image.network(
+                                    image,
+                                    height: 150,
+                                    width: 150,
                                   ),
                                 ),
-                              ),
-                              onTap: () {
-                                // Navigator.push(
-                                // context,
-                                // MaterialPageRoute(
-                                // builder: (context) =>
-                                // ProductDetailScreen(
-                                // productData: productData,
-                                // ),
-                                // ),
-                                // );
-                              },
-                            );
-                
-                
-                          },
-                        );
-                      }
-                    },
-                  ),
-              ),
-                          Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Grand Total: Rs ${grandTotal.toStringAsFixed(2)}',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () async {
-                          // Create an order and pass the orderId and product data to the next screen
-                          final orderId = await createOrder();
-
-                          await placeOrder(orderId);
-                        },
-                        child: Text('Continue'),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 50, vertical: 15),
-                          textStyle: TextStyle(fontSize: 20),
+                                Column(
+                                  children: [
+                                    Text(
+                                      productName,
+                                      style: TextStyle(fontSize: 25),
+                                    ),
+                                    Text(colorList[0],
+                                        style: TextStyle(fontSize: 25)),
+                                    Text('ROM: $rom',
+                                        style: TextStyle(fontSize: 15)),
+                                    Text('price: $price',
+                                        style: TextStyle(fontSize: 15)),
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              itemCount++;
+                                              updateCartQuantity(
+                                                  cartItem.id, itemCount);
+                                            });
+                                          },
+                                          icon: Icon(Icons.add),
+                                        ),
+                                        Text(
+                                          '$quantity',
+                                          style: TextStyle(fontSize: 20),
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              if (itemCount > 1) {
+                                                itemCount--;
+                                                updateCartQuantity(
+                                                    cartItem.id, itemCount);
+                                              }
+                                            });
+                                          },
+                                          icon: Icon(Icons.remove),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                IconButton(
+                                    onPressed: () {
+                                      deleteCartItem(cartItem.id);
+                                    },
+                                    icon: Icon(CupertinoIcons.delete_simple)),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                        onTap: () {
+                          // Navigator.push(
+                          // context,
+                          // MaterialPageRoute(
+                          // builder: (context) =>
+                          // ProductDetailScreen(
+                          // productData: productData,
+                          // ),
+                          // ),
+                          // );
+                        },
+                      );
+
+
+                    },
+                  );
+                }
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Text(
+                  'Grand Total: Rs ${grandTotal.toStringAsFixed(2)}',
+                  style: TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () async {
+                    // Create an order and pass the orderId and product data to the next screen
+                    final orderId = await createOrder();
+
+                    await placeOrder(orderId);
+                  },
+                  child: Text('Continue'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 15),
+                    textStyle: TextStyle(fontSize: 20),
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
+        ],
+      ),
     );
   }
 }

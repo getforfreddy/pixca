@@ -135,14 +135,19 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
                                     width: 150,
                                   ),
                                 ),
-                                Text(
-                                  productName,
-                                  style: TextStyle(fontSize: 25),
+                                Column(
+                                  children: [
+                                    Text(
+                                      productName,
+                                      style: TextStyle(fontSize: 25),
+                                    ),
+                                    Text('ROM: $color',
+                                        style: TextStyle(fontSize: 15)),
+                                    Text('ROM: $rom',
+                                        style: TextStyle(fontSize: 15)),
+                                  ],
                                 ),
-                                Text('ROM: $color',
-                                    style: TextStyle(fontSize: 15)),
-                                Text('ROM: $rom',
-                                    style: TextStyle(fontSize: 15)),
+
                               ],
                             ),
                           ),
