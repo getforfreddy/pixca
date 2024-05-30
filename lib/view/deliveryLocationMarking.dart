@@ -3,8 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:pixca/view/paymentScreen.dart';
-import '../view/placeOrderAndOrderSummery.dart'; // Adjust path as necessary
+import 'package:pixca/view/summery.dart';// Adjust path as necessary
 
 class DeliveryLocationMarkingPage extends StatefulWidget {
   final Map<String, dynamic> productData;
@@ -344,9 +343,7 @@ class _DeliveryLocationMarkingPageState
         context,
         MaterialPageRoute(
           builder: (context) =>
-              PlaceOrderAndOrderSummery(
-                addressData: addressData,
-              ),
+              SummeryAddressAndAmount(),
         ),
       );
     } catch (error) {

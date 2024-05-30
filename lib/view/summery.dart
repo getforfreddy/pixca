@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:pixca/view/paymentScreen.dart';
 
 class SummeryAddressAndAmount extends StatefulWidget {
   final String? orderId; // Add orderId as a parameter
@@ -14,18 +12,8 @@ class SummeryAddressAndAmount extends StatefulWidget {
 }
 
 class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
-  String address = 'Loading...';
+  String address = '';
   double totalAmount = 0;
-  bool isLoading = true; // Track loading state
-
-  // Controllers for address fields
-  TextEditingController nameController = TextEditingController();
-  TextEditingController phoneController = TextEditingController();
-  final TextEditingController housenoController = TextEditingController();
-  final TextEditingController roadnameController = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
-  final TextEditingController stateController = TextEditingController();
-  final TextEditingController pinCodeController = TextEditingController();
 
   @override
   void initState() {
@@ -41,40 +29,28 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
           .doc('addressDocumentId') // Replace with the actual document ID
           .get();
       Map<String, dynamic>? addressData =
-      addressSnapshot.data() as Map<String, dynamic>?;
+          addressSnapshot.data() as Map<String, dynamic>?;
       if (addressData != null) {
         setState(() {
-          address = addressData.toString();
-          isLoading = false; // Data fetched, set loading to false
+          address =
+              '${addressData['houseNo'] ?? ''}, ${addressData['roadName'] ?? ''}, ${addressData['city'] ?? ''}, ${addressData['state'] ?? ''} - ${addressData['pincode'] ?? ''}';
         });
       } else {
         setState(() {
-          address = 'No data found for order';
-          isLoading = false; // No address data found, set loading to false
+          address = 'No address found';
         });
       }
 
-      // Fetch total amount from user's cart
-      QuerySnapshot cartSnapshot = await FirebaseFirestore.instance
-          .collection('cart')
-          .where('userId', isEqualTo: 'userUid') // Replace with the user's UID
-          .get();
+      // Fetch total amount from cart
+      QuerySnapshot cartSnapshot =
+          await FirebaseFirestore.instance.collection('cart').get();
       double total = 0;
-      if (cartSnapshot.docs.isNotEmpty) {
-        cartSnapshot.docs.forEach((doc) {
-          total += doc['totalPrice'];
-        });
-        setState(() {
-          totalAmount = total;
-        });
-      } else {
-        setState(() {
-          totalAmount = 0;
-          if (!isLoading) {
-            address = 'No data found for order';
-          }
-        });
-      }
+      cartSnapshot.docs.forEach((doc) {
+        total += (doc['price'] ?? 0) * (doc['quantity'] ?? 0);
+      });
+      setState(() {
+        totalAmount = total;
+      });
     } catch (error) {
       print('Error fetching address and total amount: $error');
     }
@@ -86,9 +62,7 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
       appBar: AppBar(
         title: Text('Order Summary'),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Column(
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Card(
@@ -112,6 +86,73 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
                 ],
               ),
             ),
+          ),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('orders').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return Center(child: Text('Your cart is empty'));
+              } else {
+                final ordersdata = snapshot.data!.docs;
+                return Expanded(
+                  child: ListView.builder(
+                    itemCount: ordersdata.length,
+                    itemBuilder: (context, index) {
+                      final orderData = ordersdata[index];
+                      final orders = orderData.data() as Map<String, dynamic>;
+                      final productName = orders['productName'];
+                      final color = orders['color'];
+                      // Handling the color field
+                      dynamic ordersData = orders['color'];
+                      List<String> colorList = [];
+                      if (ordersData is String) {
+                        // If colorData is a string, split it by comma to create a list
+                        colorList = ordersData.split(',');
+                      } else if (ordersData is List) {
+                        // If colorData is already a list, assign it directly
+                        colorList = List<String>.from(ordersData);
+                      }
+                      final image = orders['image'];
+                      final rom = orders['rom'];
+
+                      return GestureDetector(
+                        child: Padding(
+                          padding: const EdgeInsets.all(18.0),
+                          child: Card(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Image.network(
+                                    image,
+                                    height: 150,
+                                    width: 150,
+                                  ),
+                                ),
+                                Text(
+                                  productName,
+                                  style: TextStyle(fontSize: 25),
+                                ),
+                                Text('ROM: $color',
+                                    style: TextStyle(fontSize: 15)),
+                                Text('ROM: $rom',
+                                    style: TextStyle(fontSize: 15)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }
+            },
           ),
           Card(
             child: Padding(
@@ -137,60 +178,23 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
           ),
           ElevatedButton(
             onPressed: () {
-              saveAddress();
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //       builder: (context) => PaymentPage(
+              //         userId: FirebaseAuth.instance.currentUser!.uid,
+              //         orderId: widget.orderId!,
+              //         totalAmount: totalAmount,
+              //         brand: brand,
+              //         image1: image1,)
+              //       //PaymentPage(amount: totalAmount),
+              //       ),
+              // );
             },
             child: Text('Proceed to Payment'),
           ),
         ],
       ),
     );
-  }
-
-  Future<void> saveAddress() async {
-    if (widget.orderId != null) {
-      // Save address to Firestore
-      await FirebaseFirestore.instance.collection('orders').doc(widget.orderId).update({
-        'address': {
-          'name': nameController.text,
-          'phone': phoneController.text,
-          'userId': FirebaseAuth.instance.currentUser!.uid,
-          'houseNo': housenoController.text.isNotEmpty
-              ? housenoController.text
-              : null,
-          'roadName': roadnameController.text.isNotEmpty
-              ? roadnameController.text
-              : null,
-          'city': cityController.text.isNotEmpty ? cityController.text : null,
-          'state': stateController.text.isNotEmpty ? stateController.text : null,
-          'pincode': pinCodeController.text.isNotEmpty
-              ? pinCodeController.text
-              : null,
-        }
-      });
-
-      // Fetch the total amount and other required fields from the orders collection
-      DocumentSnapshot orderSnapshot = await FirebaseFirestore.instance.collection('orders').doc(widget.orderId).get();
-      if (orderSnapshot.exists) {
-        double totalAmount = orderSnapshot['totalAmount'];
-        String brand = orderSnapshot['brand'];
-        String image1 = orderSnapshot['image1'];
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Address saved successfully')),
-        );
-
-        // Navigate to the payment page
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => PaymentPage(
-            userId: FirebaseAuth.instance.currentUser!.uid,
-            orderId: widget.orderId!,
-            totalAmount: totalAmount,
-            brand: brand,
-            image1: image1,
-          )),
-        );
-      }
-    }
   }
 }

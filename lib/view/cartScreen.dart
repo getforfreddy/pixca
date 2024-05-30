@@ -142,7 +142,8 @@ class _CartSampleState extends State<CartSample> {
           'orderId': orderId,
           'userId': _userId,
           'pid': productId,
-          'productName': productDetails['productName'],
+          'productName': cartData['productName'],
+          'image':cartData['image'],
           'price': price,
           'totalPrice': totalPriceWithoutShipping + 20,
           // Including shipping charge
