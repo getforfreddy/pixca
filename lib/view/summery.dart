@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -15,11 +16,11 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
   String address = '';
   double totalAmount = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    fetchAddressAndTotalAmount();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //  // fetchAddressAndTotalAmount();
+  // }
 
   Future<void> fetchAddressAndTotalAmount() async {
     try {
@@ -88,7 +89,9 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
             ),
           ),
           StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('orders').snapshots(),
+            stream: FirebaseFirestore.instance.collection('orders')
+                .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());

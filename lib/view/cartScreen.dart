@@ -287,14 +287,9 @@ class _CartSampleState extends State<CartSample> {
                             ),
                           );
 
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DeliveryLocationMarkingPage(
-                                        productData: widget.productData,
-                                        orderId: orderId),
-                              ));
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => DeliveryLocationMarkingPage(
+                              productData: widget.productData,
+                              orderId: orderId),), (route) => false,);
                         },
                         child: Text('Continue'),
                         style: ElevatedButton.styleFrom(
