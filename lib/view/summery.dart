@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:pixca/view/paymentScreen.dart';
 
 class SummeryAddressAndAmount extends StatefulWidget {
   final String? orderId; // Add orderId as a parameter
@@ -14,46 +16,115 @@ class SummeryAddressAndAmount extends StatefulWidget {
 
 class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
   String address = '';
-  double totalAmount = 0;
+  String userName = '';
+  String userPhone = '';
+  double totalAmount = 0.0;
+  int grandTotal = 0;
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //  // fetchAddressAndTotalAmount();
-  // }
+  @override
+  void initState() {
+    super.initState();
+    fetchAddressAndTotalAmount();
+    fetchGrandTotal();
+  }
 
   Future<void> fetchAddressAndTotalAmount() async {
-    try {
-      // Fetch address from Firestore
-      DocumentSnapshot addressSnapshot = await FirebaseFirestore.instance
-          .collection('addresses')
-          .doc('addressDocumentId') // Replace with the actual document ID
-          .get();
-      Map<String, dynamic>? addressData =
-          addressSnapshot.data() as Map<String, dynamic>?;
-      if (addressData != null) {
-        setState(() {
-          address =
-              '${addressData['houseNo'] ?? ''}, ${addressData['roadName'] ?? ''}, ${addressData['city'] ?? ''}, ${addressData['state'] ?? ''} - ${addressData['pincode'] ?? ''}';
-        });
-      } else {
-        setState(() {
-          address = 'No address found';
-        });
-      }
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('No user is currently signed in.');
+      return;
+    }
 
-      // Fetch total amount from cart
-      QuerySnapshot cartSnapshot =
-          await FirebaseFirestore.instance.collection('cart').get();
-      double total = 0;
-      cartSnapshot.docs.forEach((doc) {
-        total += (doc['price'] ?? 0) * (doc['quantity'] ?? 0);
+    try {
+      // Fetch addresses from Firestore
+      QuerySnapshot addressSnapshot = await FirebaseFirestore.instance
+          .collection('addressbook')
+          .where('userId', isEqualTo: user.uid)
+          .get();
+
+      List<String> addresses = [];
+      String? name;
+      String? phone;
+
+      addressSnapshot.docs.forEach((doc) {
+        Map<String, dynamic>? addressData = doc.data() as Map<String, dynamic>?;
+        if (addressData != null) {
+          if (name == null && phone == null) {
+            name = addressData['name'];
+            phone = addressData['phone'];
+          }
+          addresses.add(
+            '${addressData['houseNo'] ?? ''}, ${addressData['roadName'] ?? ''}, ${addressData['city'] ?? ''}, ${addressData['state'] ?? ''} - ${addressData['pincode'] ?? ''}',
+          );
+        }
       });
+
       setState(() {
-        totalAmount = total;
+        address = addresses.isNotEmpty ? addresses.join('\n') : 'No address found';
+        userName = name ?? 'No name found';
+        userPhone = phone ?? 'No phone number found';
       });
+
+      // // Fetch total amount from orders
+      // QuerySnapshot orderSnapshot = await FirebaseFirestore.instance
+      //     .collection('orders')
+      //     .where('userId', isEqualTo: user.uid)
+      //     .get();
+      //
+      // double total = 0;
+      // orderSnapshot.docs.forEach((doc) {
+      //   total += (doc['price'] ?? 0) * (doc['quantity'] ?? 0);
+      // });
+      //
+      // setState(() {
+      //   totalAmount = total;
+      // });
     } catch (error) {
       print('Error fetching address and total amount: $error');
+    }
+  }
+  Future<void> fetchGrandTotal() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        QuerySnapshot orderSnapshot = await FirebaseFirestore.instance
+            .collection('orders')
+            .where('userId', isEqualTo: user.uid)
+            .get();
+
+        int total = 0;
+
+        for (var orderDoc in orderSnapshot.docs) {
+          // Log the document data to debug
+          print('Document data: ${orderDoc.data()}');
+
+          // Get the price string and remove non-numeric characters
+          String priceStr = orderDoc['price'] ?? '0';
+          priceStr = priceStr.replaceAll(RegExp(r'[^0-9]'), '');
+
+          // Convert the cleaned price string to an integer
+          int price = int.tryParse(priceStr) ?? 0;
+
+          // Log the converted price
+          print('Converted price: $price');
+
+          total += price;
+        }
+
+        // Log the total amount
+        print('Total amount: $total');
+
+        setState(() {
+          grandTotal = total;
+        });
+      } catch (e) {
+        // Handle potential errors
+        print('Error fetching orders: $e');
+        Fluttertoast.showToast(
+            msg: 'Error fetching orders',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM);
+      }
     }
   }
 
@@ -72,6 +143,30 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    'Name',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    userName,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  Text(
+                    'Phone',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    userPhone,
+                    style: TextStyle(fontSize: 16),
+                  ),
                   Text(
                     'Address',
                     style: TextStyle(
@@ -153,7 +248,6 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
                                         style: TextStyle(fontSize: 15)),
                                   ],
                                 ),
-
                               ],
                             ),
                           ),
@@ -180,7 +274,7 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '\$$totalAmount',
+                    '\$$grandTotal',
                     style: TextStyle(fontSize: 16),
                   ),
                 ],
@@ -189,18 +283,13 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
           ),
           ElevatedButton(
             onPressed: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //       builder: (context) => PaymentPage(
-              //         userId: FirebaseAuth.instance.currentUser!.uid,
-              //         orderId: widget.orderId!,
-              //         totalAmount: totalAmount,
-              //         brand: brand,
-              //         image1: image1,)
-              //       //PaymentPage(amount: totalAmount),
-              //       ),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => RazorPayPage()
+                    //PaymentPage(amount: totalAmount),
+                    ),
+              );
             },
             child: Text('Proceed to Payment'),
           ),

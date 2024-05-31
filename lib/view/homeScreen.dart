@@ -15,6 +15,7 @@ import 'package:pixca/view/addPhonesToFireBase.dart';
 import 'package:pixca/view/cameraSample.dart';
 import 'package:pixca/view/cartScreen.dart';
 import 'package:pixca/view/notificationscreen.dart';
+import 'package:pixca/view/paymentScreen.dart';
 import 'package:pixca/view/phoneScreen.dart';
 import 'package:pixca/view/productBrandList.dart';
 import 'package:pixca/view/productDetailingPage.dart';
@@ -148,19 +149,19 @@ class _HomeSampleState extends State<HomeSample> {
                 style: TextStyle(color: Colors.red),
               ),
             ),
-            // ListTile(
-            //   leading: Icon(Icons.photo_camera_back),
-            //   title: Text("OrderSummery"),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //         builder: (context) => SummeryAddressAndAmount(),
-            //       ),
-            //     );
-            //   },
-            //   trailing: Icon(Icons.arrow_forward_ios_sharp),
-            // ),
+            ListTile(
+              leading: Icon(Icons.photo_camera_back),
+              title: Text("OrderSummery"),
+              onTap: () {
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => PaymentPage(orderId: orderId, image1: image1, brand: brand, totalAmount: totalAmount, userId: userId),
+                //   ),
+                // );
+              },
+              trailing: Icon(Icons.arrow_forward_ios_sharp),
+            ),
           ],
         ),
       ),

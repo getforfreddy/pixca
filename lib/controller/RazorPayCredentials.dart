@@ -1,4 +1,4 @@
 class RazorPayCredentials{
-  static const String keyId = "rzp_test_Ug8buFDa4fiWTk";
-  static const String keySecret = "XpvxQjz3gArPNqPF9TUlzSq5";
+  static const String keyId = "rzp_test_z3xvjJJJzPEY59";
+  static const String keySecret = " k5rjnky2hajfVbSAPWOtnSKl";
 }

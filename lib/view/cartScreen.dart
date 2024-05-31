@@ -82,18 +82,7 @@ class _CartSampleState extends State<CartSample> {
     }
   }
 
-  Future<Map<String, dynamic>> fetchProductDetails(String pid) async {
-    try {
-      final productSnapshot = await FirebaseFirestore.instance
-          .collection('products')
-          .doc(pid)
-          .get();
-      return productSnapshot.data() ?? {};
-    } catch (error) {
-      print('Error fetching product details: $error');
-      return {};
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
