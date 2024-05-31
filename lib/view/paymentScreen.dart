@@ -36,6 +36,7 @@ class _RazorPayPageState extends State<RazorPayPage> {
         QuerySnapshot orderSnapshot = await FirebaseFirestore.instance
             .collection('orders')
             .where('userId', isEqualTo: user.uid)
+            .where('orderStatus', isEqualTo: 'Processing')
             .get();
 
         int total = 0;
@@ -105,7 +106,38 @@ class _RazorPayPageState extends State<RazorPayPage> {
     }
   }
 
-  Future<void> _updateOrderStatus() async {
+  // Future<void> _updateOrderStatus() async {
+  //   User? user = FirebaseAuth.instance.currentUser;
+  //   if (user != null) {
+  //     try {
+  //       QuerySnapshot orderSnapshot = await FirebaseFirestore.instance
+  //           .collection('orders')
+  //           .where('userId', isEqualTo: user.uid)
+  //           .get();
+  //
+  //       for (var orderDoc in orderSnapshot.docs) {
+  //         await orderDoc.reference.update({'orderStatus': 'Success'});
+  //       }
+  //     } catch (e) {
+  //       print('Error updating order status: $e');
+  //       Fluttertoast.showToast(
+  //           msg: 'Error updating order status',
+  //           toastLength: Toast.LENGTH_SHORT,
+  //           gravity: ToastGravity.BOTTOM);
+  //     }
+  //   }
+  // }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    Fluttertoast.showToast(
+        msg: 'Payment Success: ' + response.paymentId!,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM);
+
+    await _updateOrderStatus(response.paymentId!);
+  }
+
+  Future<void> _updateOrderStatus(String paymentId) async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
@@ -115,7 +147,10 @@ class _RazorPayPageState extends State<RazorPayPage> {
             .get();
 
         for (var orderDoc in orderSnapshot.docs) {
-          await orderDoc.reference.update({'orderStatus': 'Success'});
+          await orderDoc.reference.update({
+            'orderStatus': 'Success',
+            'paymentId': paymentId,
+          });
         }
       } catch (e) {
         print('Error updating order status: $e');
@@ -125,15 +160,6 @@ class _RazorPayPageState extends State<RazorPayPage> {
             gravity: ToastGravity.BOTTOM);
       }
     }
-  }
-
-  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    Fluttertoast.showToast(
-        msg: 'Payment Success: ' + response.paymentId!,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM);
-
-    await _updateOrderStatus();
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {

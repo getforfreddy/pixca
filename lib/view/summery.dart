@@ -89,7 +89,8 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
       try {
         QuerySnapshot orderSnapshot = await FirebaseFirestore.instance
             .collection('orders')
-            .where('userId', isEqualTo: user.uid)
+            .where('userId', isEqualTo: user.uid).
+    where('orderStatus', isEqualTo: 'Processing')
             .get();
 
         int total = 0;
@@ -186,6 +187,7 @@ class _SummeryAddressAndAmountState extends State<SummeryAddressAndAmount> {
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance.collection('orders')
                 .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                .where('orderStatus', isEqualTo: 'Processing') // Filter by order status
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
