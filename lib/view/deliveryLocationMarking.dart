@@ -209,13 +209,7 @@ class _DeliveryLocationMarkingPageState
             ...userAddresses.map((address) => GestureDetector(
               onTap: () {
                 setState(() {
-                  nameController.text = address['name'];
-                  phoneController.text = address['phone'];
-                  housenoController.text = address['houseNo'];
-                  roadnameController.text = address['roadName'];
-                  cityController.text = address['city'];
-                  stateController.text = address['state'];
-                  pinCodeController.text = address['pincode'];
+                 Navigator.push(context, MaterialPageRoute(builder: (context) => SummeryAddressAndAmount(),));
                 });
               },
               child: Card(
